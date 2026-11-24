@@ -445,18 +445,18 @@ footer p{margin:6px 0}
           <button type="button" data-v="12">🔍 Detailed 12<small>Every finer step</small></button>
         </div>
       </div>
-      <div class="tog"><b>Explain it for</b>
+      <div class="tog"><b>Who are you?</b>
         <div class="seg" id="levelSeg">
-          <button type="button" data-v="adult" class="on">🧑 Grown-Ups<small>All the real detail</small></button>
-          <button type="button" data-v="kid">🧒 Kids<small>Simple words, same journey</small></button>
+          <button type="button" data-v="adult" class="on">🧑 Grown-Up<small>All the real detail</small></button>
+          <button type="button" data-v="kid">🧒 Kid<small>Simple words, kid examples</small></button>
         </div>
       </div>
     </div>
     <div class="sides">
       <div class="sidetabs" id="sideTabs">
-        <button type="button" data-v="home" class="on">🏠 Home Life<small>Utilities, appliances, gadgets, the world outside</small></button>
-        <button type="button" data-v="industry">🏭 Industry &amp; Manufacturing<small>Parts, materials, machines, big systems</small></button>
-        <button type="button" data-v="tech">💻 Technology &amp; Internet<small>The web, apps, AI, computers and chips</small></button>
+        <button type="button" data-v="home" class="on"></button>
+        <button type="button" data-v="industry"></button>
+        <button type="button" data-v="tech"></button>
       </div>
       <div class="doorsbox">
         <div class="doors" id="doors"></div>
@@ -478,7 +478,7 @@ footer p{margin:6px 0}
 
 <footer>
   <p>Lessons are written live with AI from well-established engineering and manufacturing knowledge. Times, distances and counts are typical estimates, and real processes vary by maker and region. AI can make mistakes, so double-check anything important.</p>
-  <p>This is education, not instructions for doing electrical, gas or plumbing work yourself. Always use a licensed professional for those. Blueprint drawings are AI sketches, not engineering plans. Photos from Wikimedia Commons and Wikipedia, credited on each photo.</p>
+  <p>This is education, not instructions for doing electrical, gas or plumbing work yourself. Always use a licensed professional for those. Blueprint drawings are AI sketches, not engineering plans. Photos come from Wikimedia Commons, Wikipedia and the web, each credited and linked to where it came from.</p>
   <p>Start to Finish to Start is part of <a href="https://nusparklearnwow.com" target="_blank" rel="noopener">NuSparkLearnWow.com</a> from NuSpark Publishing.</p>
 </footer>
 
@@ -529,6 +529,30 @@ const SIDES = {
   ]
 };
 
+// Kids get their own tab names, friendlier door names, and picks from a kid's world (about 6 kid picks + 2 shared per door)
+const TABS = {
+  adult: { home: ["🏠 Home Life", "Utilities, appliances, gadgets, the world outside"], industry: ["🏭 Industry & Manufacturing", "Parts, materials, machines, big systems"], tech: ["💻 Technology & Internet", "The web, apps, AI, computers and chips"] },
+  kid: { home: ["🏠 At Home", "Your house, kitchen, toys and outside"], industry: ["🏭 Factories & Machines", "How stuff gets made"], tech: ["🎮 Tech & Games", "Games, apps, robots and computers"] }
+};
+const KID = {
+  power: ["Power & Water", "What comes into your house", [["🔌", "Electrical outlet"], ["🚰", "Tap water at the faucet"], ["💡", "Light bulb"], ["🛁", "Hot water for your bath"], ["🔋", "AA battery"], ["📶", "Wi-Fi at home"], ["🧊", "Freezer ice cubes"], ["☀️", "Solar-powered calculator"]]],
+  appl: ["Kitchen Machines", "Machines that make snacks and clean up", [["🧊", "Refrigerator"], ["🍽️", "Dishwasher"], ["🍿", "Popcorn popper"], ["🧇", "Waffle maker"], ["🍦", "Ice cream maker"], ["🥤", "Blender for smoothies"], ["🍞", "Toaster"], ["🧺", "Washing machine"]]],
+  gadget: ["Toys & Gadgets", "Fun stuff in your room", [["🧱", "LEGO bricks"], ["🧸", "Teddy bear"], ["🎮", "Video game controller"], ["🎧", "Headphones"], ["📱", "Tablet"], ["🪀", "Yo-yo"], ["🖍️", "Crayons"], ["📺", "Flat-screen TV"]]],
+  world: ["Out & About", "Things you see outside", [["🚦", "Traffic light"], ["🚌", "School bus"], ["🎢", "Roller coaster"], ["🛝", "Playground slide"], ["⚽", "Soccer ball"], ["🚲", "Bicycle"], ["🛹", "Skateboard"], ["🛒", "Shopping cart"]]],
+  parts: ["Inside Things", "The little parts inside everything", [["🔋", "Battery"], ["💡", "LED light"], ["⚙️", "Toy motor"], ["🧲", "Magnet"], ["🎈", "Balloon"], ["🖊️", "Pen"], ["🔲", "Microchip"], ["🔩", "Screws and bolts"]]],
+  mat: ["What Stuff Is Made Of", "Turning raw stuff into things", [["✏️", "Pencil"], ["🍫", "Chocolate bar"], ["🥫", "Soda can"], ["🔮", "Glass marbles"], ["🧶", "Yarn"], ["🧀", "Cheese"], ["📄", "Paper"], ["🧴", "Plastic bottle"]]],
+  mach: ["Machines & Vehicles", "Things that move and lift", [["🚒", "Fire truck"], ["✈️", "Airplane"], ["🚀", "Rocket"], ["🚂", "Train"], ["🏗️", "Crane"], ["🚁", "Helicopter"], ["🚗", "Car"], ["🚜", "Tractor"]]],
+  sys: ["Giant Places", "Huge places that make and move things", [["🧸", "Toy factory"], ["🍦", "Ice cream factory"], ["🏟️", "Stadium"], ["🎡", "Theme park"], ["🌊", "Water park"], ["✈️", "Airport"], ["📦", "Warehouse"], ["⚡", "Power plant"]]],
+  net: ["The Internet", "How the internet reaches you", [["📺", "A YouTube video reaching your screen"], ["💬", "A text message"], ["🎥", "A video call with Grandma"], ["🎵", "Streaming a song"], ["☁️", "Saving to the cloud"], ["🌐", "A website"], ["🔍", "Search engine"], ["📶", "Wi-Fi router"]]],
+  apps: ["Games & Apps", "The games and apps you play", [["⛏️", "A video game like Minecraft"], ["🎮", "Game console"], ["🧩", "Puzzle game app"], ["🎨", "Drawing app"], ["🏎️", "Racing video game"], ["📚", "Reading app"], ["📱", "Phone app"], ["🗺️", "Map app"]]],
+  ai: ["Robots & AI", "Machines that think and move", [["🤖", "Robot toy"], ["🐕", "Robot dog"], ["🛸", "Drone"], ["🚘", "Self-driving car"], ["💭", "AI chatbot"], ["🦾", "Factory robot arm"], ["🧹", "Robot vacuum"], ["🗣️", "Voice assistant"]]],
+  chips: ["Computers", "The machines doing the thinking", [["💻", "Laptop"], ["🖱️", "Computer mouse"], ["⌨️", "Keyboard"], ["🖨️", "3D printer"], ["🕹️", "Arcade machine"], ["🧮", "Calculator"], ["⌚", "Smartwatch"], ["🔲", "Computer chip"]]]
+};
+const kidMode = () => state.level === "kid";
+function drawTabs(){
+  const t = TABS[kidMode() ? "kid" : "adult"];
+  document.querySelectorAll("#sideTabs button").forEach(b => { const x = t[b.dataset.v]; b.innerHTML = ""; b.append(x[0], el("small", { text: x[1] })); b.classList.toggle("on", b.dataset.v === state.side); });
+}
 const moreIdeas = {}; // "door|kind" -> extra ideas Mr. Paul suggested this visit
 
 // Banner: 8 real photos (4 on phones), picked at random each visit, with drawn tiles if a photo won't load
@@ -622,6 +646,7 @@ function findPhoto(q, fallbackTitle){
   if (photoMem[key]) return photoMem[key];
   return (photoMem[key] = (async () => {
     const tries = [];
+    if (q || fallbackTitle) tries.push(async () => { const r = await fetch("/api/images?q=" + encodeURIComponent(q || fallbackTitle)); if (!r.ok) return null; const j = await r.json(); return j && j.image; });
     if (q) tries.push(() => commonsPhoto(q));
     if (fallbackTitle) tries.push(() => wikiPhoto(fallbackTitle), () => commonsPhoto(fallbackTitle));
     for (const t of tries) { try { const p = await t(); if (p) return p; } catch(e){} }
@@ -638,7 +663,7 @@ function photoBox(q, fallbackTitle, emptyText){
     img.onload = () => { img.classList.add("on"); ph.firstChild.textContent = ""; };
     img.onerror = () => { img.remove(); ph.firstChild.textContent = emptyText || "No matching photo this time. The blueprint shows the idea."; };
     ph.append(img);
-    cap.append(el("b", { text: "Real photo: " }), p.title + ". ", el("a", { href: p.link, target: "_blank", rel: "noopener", text: [p.credit, p.license, p.source].filter(Boolean).join(", ") }));
+    cap.append(el("b", { text: "Photo: " }), p.title + ". ", el("a", { href: p.link, target: "_blank", rel: "noopener", text: [p.credit, p.license, p.source].filter(Boolean).join(", ") }));
   });
   return fig;
 }
@@ -746,7 +771,7 @@ function closeView(){ stopAll(); state.stack = []; state.run = null; state.view 
 function goHome(){
   stopAll(); state.stack = []; state.paused = false; state.run = null;
   $("#mainQ").value = "";
-  setSeg("kindSeg", "build"); setSeg("dirSeg", "forward"); setSeg("levelSeg", "adult"); setSeg("stepsSeg", "8");
+  setSeg("kindSeg", "build"); setSeg("dirSeg", "forward"); setSeg("stepsSeg", "8"); setSeg("levelSeg", "adult");
   state.view = homeView(); paint(state.view); setBar("", "home");
   say("Pick anything. I'll show you how it's built, and where it all comes from!");
   scrollToEl($(".top"));
@@ -754,7 +779,7 @@ function goHome(){
 function setSeg(id, v){
   document.querySelectorAll("#" + id + " button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
   if (id === "dirSeg") state.dir = v;
-  if (id === "levelSeg") state.level = v;
+  if (id === "levelSeg") { state.level = v; drawTabs(); drawDoors(); }
   if (id === "stepsSeg") state.steps = parseInt(v, 10) === 12 ? 12 : 8;
   if (id === "kindSeg") {
     state.kind = v === "plan" ? "plan" : "build";
@@ -771,23 +796,26 @@ function setSeg(id, v){
 /* ---------- the workshop doors ---------- */
 function drawDoors(){
   const box = $("#doors"); box.innerHTML = "";
+  const dn = d => kidMode() && KID[d.id] ? KID[d.id][0] : d.name, db = d => kidMode() && KID[d.id] ? KID[d.id][1] : d.blurb;
   SIDES[state.side].forEach(d => box.append(el("button", { type: "button", class: "door" + (state.door === d.id ? " on" : ""), onclick: () => openDoor(d.id) },
-    el("span", { class: "ic", "aria-hidden": "true", text: d.icon }), d.name, el("small", { text: d.blurb }))));
+    el("span", { class: "ic", "aria-hidden": "true", text: d.icon }), dn(d), el("small", { text: db(d) }))));
   const items = $("#items");
   const d = SIDES[state.side].find(x => x.id === state.door);
   if (!d) { items.hidden = true; return; }
   items.hidden = false; items.innerHTML = "";
   const proc = state.kind === "plan";
-  const base = d.items, key = d.id + "|" + state.kind, extra = moreIdeas[key] || [];
-  const chip = (ic, name, isNew) => el("button", { type: "button", class: "chip" + (isNew ? " new" : ""), onclick: () => startRun(name, d.name) }, el("span", { "aria-hidden": "true", text: ic }), name);
+  const kid = kidMode() && KID[d.id];
+  const base = kid ? KID[d.id][2] : d.items, key = d.id + "|" + state.kind + "|" + state.level, extra = moreIdeas[key] || [];
+  const dname = kid ? KID[d.id][0] : d.name;
+  const chip = (ic, name, isNew) => el("button", { type: "button", class: "chip" + (isNew ? " new" : ""), onclick: () => startRun(name, dname) }, el("span", { "aria-hidden": "true", text: ic }), name);
   const more = el("button", { type: "button", class: "morebtn" }, "✨ Give Me 8 More Ideas");
   more.onclick = () => {
     more.disabled = true; more.textContent = "✨ Mr. Paul is thinking of 8 more...";
-    api({ mode: "ideas", kind: state.kind, side: state.side, category: d.name, exclude: base.concat(extra).map(x => x[1]) })
+    api({ mode: "ideas", kind: state.kind, level: state.level, side: state.side, category: dname, exclude: base.concat(extra).map(x => x[1]) })
       .then(j => { if (!j.ideas || !j.ideas.length) throw new Error("No new ideas this time. Try again."); moreIdeas[key] = extra.concat(j.ideas.map(x => [x.icon, x.name])); drawDoors(); })
       .catch(e => { more.disabled = false; more.textContent = "✨ Give Me 8 More Ideas"; toast(e.message); });
   };
-  items.append(el("h4", { text: d.icon + " " + d.name + (proc ? ": pick one to plan" : ": pick one to build") }),
+  items.append(el("h4", { text: d.icon + " " + dname + (proc ? ": pick one to plan" : ": pick one to build") }),
     el("div", { class: "chips" }, base.map(([ic, name]) => chip(ic, name)), extra.map(([ic, name]) => chip(ic, name, true))), more);
 }
 function openDoor(id){ state.door = state.door === id ? null : id; drawDoors(); }
@@ -822,7 +850,7 @@ function startRun(thing, category, clarified){
   stopAll();
   state.stack = []; state.paused = false;
   const run = state.run = { id: Math.random(), thing, category: category || "", clarified: clarified || "", dir: state.dir, level: state.level, kind: state.kind, n: state.steps,
-    outline: null, a: null, b: null, art: null, errA: null, errB: null, artFailed: false, at: 0, chat: [], more: {}, stepChat: {}, openQ: {} };
+    outline: null, p: null, a: null, b: null, art: null, errP: null, errA: null, errB: null, artFailed: false, at: 0, chat: [], more: {}, stepChat: {}, openQ: {} };
   STOP_LAST = run.n + 1;
   const v = { kind: "outline", restart: () => startRun(thing, category, clarified), render(d){
     setBar(thing, "outline");
@@ -851,8 +879,10 @@ function loadRest(run){
     .catch(e => { run.errA = e.message; refresh(aRange); });
   const getB = () => api(Object.assign({ mode: "detail", part: "b" }, common)).then(j => { if (j.ok === false) throw new Error(j.message); run.b = j; run.errB = null; refresh(bRange); })
     .catch(e => { run.errB = e.message; refresh(bRange); });
-  run.retryA = getA; run.retryB = getB;
-  getA(); getB();
+  const getP = () => api(Object.assign({ mode: "detail", part: "p" }, common)).then(j => { if (j.ok === false) throw new Error(j.message); run.p = j; run.errP = null; refresh([0]); })
+    .catch(e => { run.errP = e.message; refresh([0]); });
+  run.retryA = getA; run.retryB = getB; run.retryP = getP;
+  getP(); getA(); getB();
   api(Object.assign({ mode: "art" }, common)).then(j => {
     if (state.run !== run) return;
     if (j.ok && Array.isArray(j.layers)) { run.art = j.layers; } else run.artFailed = true;
@@ -895,7 +925,7 @@ function lessonView(run){
       const s = o.steps[i - 1];
       const icon = i === 0 ? (fwd ? "📐" : "📍") : i === STOP_LAST ? (fwd ? "✅" : "🌱") : s.icon;
       const label = i === 0 ? (fwd ? (proc ? "Idea" : "Prep") : "Here") : i === STOP_LAST ? (fwd ? (proc ? "Shelf" : "Done") : (proc ? "Idea" : "Origin")) : String(i);
-      const ready = i === 0 || i === STOP_LAST ? (i === 0 ? run.a : run.b) : stepData(run, i);
+      const ready = i === 0 || i === STOP_LAST ? (i === 0 ? run.p : run.b) : stepData(run, i);
       tr.append(el("button", { type: "button", role: "tab", class: (i === at ? "cur" : i < at ? "done" : "") + (ready ? "" : " wait"),
         title: i === 0 ? (fwd ? (proc ? "The big idea" : "The prep") : "Where we start") : i === STOP_LAST ? (fwd ? "Finished" : "Where it all begins") : s.title,
         onclick: () => goStep(run, i) }, el("span", { class: "i", "aria-hidden": "true", text: icon }), label));
@@ -1034,7 +1064,7 @@ function updateBoard(run){
 function stagePhoto(run){
   const o = run.outline, at = run.at, fwd = run.dir === "forward";
   if (at === 0) {
-    if (fwd && !run.a) return el("figure", { class: "photo" }, el("div", { class: "ph" }, el("span", { text: "📷 The photo arrives with the plan..." })));
+    if (fwd && !run.p) return el("figure", { class: "photo" }, el("div", { class: "ph" }, el("span", { text: "📷 The photo arrives with the plan..." })));
     return photoBox("", o.name);
   }
   if (at === STOP_LAST) return photoBox("", o.name);
@@ -1051,13 +1081,13 @@ function stepCard(run){
   const o = run.outline, at = run.at, fwd = run.dir === "forward";
   const card = el("div", { class: "card" + (fwd ? "" : " back") });
   const proc = run.kind === "plan";
-  const half = at <= run.n / 2 ? "a" : "b", err = half === "a" ? run.errA : run.errB, retry = half === "a" ? run.retryA : run.retryB;
-  const waiting = (txt) => { card.append(err ? errEl(err, () => { (half === "a" ? (run.errA = null) : (run.errB = null)); retry(); repaint(); }) : loadingEl(txt, ["Asking the plant manager...", "Checking the parts list...", "Measuring twice...", "Calling the suppliers..."], true)); };
+  const half = at === 0 ? "p" : at <= run.n / 2 ? "a" : "b", err = run["err" + half.toUpperCase()], retry = run["retry" + half.toUpperCase()];
+  const waiting = (txt) => { card.append(err ? errEl(err, () => { run["err" + half.toUpperCase()] = null; retry(); repaint(); }) : loadingEl(txt, ["Asking the plant manager...", "Checking the parts list...", "Measuring twice...", "Calling the suppliers..."], true)); };
 
   if (at === 0) {
     if (fwd) {
       card.append(el("div", { class: "kick", text: proc ? "Before anyone spends a dollar" : "Before anything is built" }), el("h3", { text: proc ? "The Big Idea: Why Make " + o.name + "?" : "The Blueprint: Prepping " + o.name }));
-      const bp = run.a && run.a.blueprint;
+      const bp = run.p && run.p.blueprint;
       if (!bp) { card.append(roadmap(o)); waiting(proc ? "Working out the opportunity and the numbers..." : "Drawing up the plan and the math..."); return card; }
       card.append(el("p", { class: "txt", text: bp.text }));
       if (bp.planners.length) card.append(el("div", { class: "planners" }, bp.planners.map(p => el("span", { text: "👷 " + p }))));
@@ -1069,7 +1099,7 @@ function stepCard(run){
       card.append(el("div", { class: "sub3", text: "The " + run.n + (proc ? " steps of the plan" : " build steps") }), roadmap(o));
     } else {
       card.append(el("div", { class: "kick", text: "The starting point" }), el("h3", { text: o.name + ": Right in Front of You" }));
-      const st = run.a && run.a.start;
+      const st = run.p && run.p.start;
       if (!st) { card.append(roadmap(o)); waiting(proc ? "Tracing the decisions..." : "Mapping the chain..."); return card; }
       card.append(el("p", { class: "txt", text: st.text }));
       if (st.chainLength) card.append(el("div", { class: "facts" }, fact(proc ? "From first idea to the shelf" : "How far the chain stretches", st.chainLength, true)));
@@ -1285,7 +1315,7 @@ function toggleRead(run){
 }
 function currentText(run){
   const o = run.outline, at = run.at, fwd = run.dir === "forward";
-  if (at === 0) { const t = fwd ? run.a && run.a.blueprint && run.a.blueprint.text : run.a && run.a.start && run.a.start.text; return t ? (fwd ? "The plan. " : "Here we are. ") + t : ""; }
+  if (at === 0) { const t = fwd ? run.p && run.p.blueprint && run.p.blueprint.text : run.p && run.p.start && run.p.start.text; return t ? (fwd ? "The plan. " : "Here we are. ") + t : ""; }
   if (at === STOP_LAST) { const f = run.b && run.b.finish; return f ? f.text + (fwd && f.journey ? " " + f.journey : "") : ""; }
   const s = stepData(run, at); if (!s) return "";
   return unit(run) + at + ". " + o.steps[at - 1].title + ". " + s.text + (s.wow ? " Wow, who knew? " + s.wow : "");
@@ -1338,7 +1368,7 @@ function wholeView(run){
     box.append(el("div", { class: "lhead" }, el("span", { class: "em", text: o.emoji }), el("div", {},
       el("span", { class: "dirtag" + (fwd ? "" : " back"), text: fwd ? "▶ Start to Finish" : "◀ Finish to Start" }), el("h2", { text: o.name }), el("p", { text: o.oneLiner || "" }))));
     box.append(el("div", { class: "tools noprint" }, el("button", { type: "button", onclick: () => window.print() }, "🖨️ Print or Save as PDF"), el("button", { type: "button", onclick: () => copyText(lessonText(run)) }, "📋 Copy")));
-    if (!run.a || !run.b) box.append(el("div", { class: "note", text: "Some steps are still loading. Go back and come here again in a moment for the full lesson." }));
+    if (!run.p || !run.a || !run.b) box.append(el("div", { class: "note", text: "Some steps are still loading. Go back and come here again in a moment for the full lesson." }));
     const board = el("div", { class: "board", style: "margin-top:12px" });
     const keepAt = run.at; run.at = STOP_LAST; drawBoard(board, run); run.at = keepAt;
     box.append(board);
@@ -1349,14 +1379,14 @@ function wholeView(run){
       box.append(w);
     });
     box.append(el("p", { class: "hint", text: "From Start to Finish to Start on NuSparkLearnWow.com. Written live with AI; times and counts are typical estimates." }));
-    if (run.a && run.b) box.append(usualEnding(run));
+    if (run.p && run.a && run.b) box.append(usualEnding(run));
     d.append(box);
   }};
 }
 function lessonParts(run){
   const o = run.outline, fwd = run.dir === "forward", out = [];
-  if (fwd && run.a && run.a.blueprint) { const b = run.a.blueprint; out.push({ h: run.kind === "plan" ? "The Big Idea" : "The Blueprint", body: [b.text, b.requirements.length ? "It has to: " + b.requirements.join("; ") + "." : "", ...b.math.map(m => m.label + ": " + m.work + (m.result ? " = " + m.result : ""))].filter(Boolean) }); }
-  if (!fwd && run.a && run.a.start) out.push({ h: "The Starting Point", body: [run.a.start.text, run.a.start.chainLength ? "The chain stretches " + run.a.start.chainLength + "." : ""].filter(Boolean) });
+  if (fwd && run.p && run.p.blueprint) { const b = run.p.blueprint; out.push({ h: run.kind === "plan" ? "The Big Idea" : "The Blueprint", body: [b.text, b.requirements.length ? "It has to: " + b.requirements.join("; ") + "." : "", ...b.math.map(m => m.label + ": " + m.work + (m.result ? " = " + m.result : ""))].filter(Boolean) }); }
+  if (!fwd && run.p && run.p.start) out.push({ h: "The Starting Point", body: [run.p.start.text, run.p.start.chainLength ? "The chain stretches " + run.p.start.chainLength + "." : ""].filter(Boolean) });
   for (let n = 1; n <= run.n; n++) {
     const s = stepData(run, n), t = o.steps[n - 1];
     const body = s ? [s.text,
@@ -1393,12 +1423,13 @@ document.querySelectorAll("#stepsSeg button").forEach(b => b.addEventListener("c
 document.querySelectorAll("#kindSeg button").forEach(b => b.addEventListener("click", () => setSeg("kindSeg", b.dataset.v)));
 document.querySelectorAll("#sideTabs button").forEach(b => b.addEventListener("click", () => {
   state.side = b.dataset.v; state.door = null;
-  document.querySelectorAll("#sideTabs button").forEach(x => x.classList.toggle("on", x === b));
+  drawTabs();
   drawDoors();
 }));
 $("#mainGo").addEventListener("click", () => startRun($("#mainQ").value, ""));
 $("#mainQ").addEventListener("keydown", e => { if (e.key === "Enter") startRun($("#mainQ").value, ""); });
 buildBanner();
+drawTabs();
 drawDoors();
 state.view = homeView(); paint(state.view);
 

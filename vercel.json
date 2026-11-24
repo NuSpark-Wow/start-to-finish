@@ -1,5 +1,6 @@
 {
   "functions": {
-    "api/build.js": { "maxDuration": 240 }
+    "api/build.js": { "maxDuration": 240 },
+    "api/images.js": { "maxDuration": 30 }
   }
 }
