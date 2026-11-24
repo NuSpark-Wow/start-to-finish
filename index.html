@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- LearnWow member pass (do not remove): gets the member pass from nusparklearnwow.com and shows the Join screen when a visitor runs out of tries -->
+<script>
+(function () {
+  if (window.__lwgate) return; window.__lwgate = 1;
+  var JOIN = "https://nusparklearnwow.com/join/", LOGIN = "https://nusparklearnwow.com/membership-login/";
+  var LW = { pass: null, vid: "" };
+  try { LW.vid = localStorage.getItem("lw_vid") || ""; if (!LW.vid) { LW.vid = (Date.now().toString(36) + Math.random().toString(36).slice(2, 12)); localStorage.setItem("lw_vid", LW.vid); } }
+  catch (e) { LW.vid = "s" + Math.random().toString(36).slice(2, 12); }
+  var okHost = /(^|\.)(nusparklearnwow|nusparkpublishing|nusparkmarketing)\.com$/;
+  var ready = new Promise(function (done) {
+    if (window.parent === window) return done();
+    var fin = false, end = function () { if (!fin) { fin = true; done(); } };
+    window.addEventListener("message", function (e) {
+      var d = e.data; if (!d || d.type !== "lw-pass") return;
+      try { if (!okHost.test(new URL(e.origin).hostname)) return; } catch (x) { return; }
+      LW.pass = d.pass || null;
+      if (d.vid && /^[a-z0-9]{6,40}$/i.test(d.vid)) LW.vid = "w" + d.vid;
+      end();
+    });
+    try { window.parent.postMessage({ type: "lw-pass-request" }, "*"); } catch (x) {}
+    setTimeout(end, 1500);
+  });
+
+  var lastAct = 0;
+  ["pointerdown", "keydown", "touchstart"].forEach(function (ev) { window.addEventListener(ev, function (e) { if (e.isTrusted) lastAct = Date.now(); }, true); });
+
+  var shown = false;
+  function show(j) {
+    if (shown) return; shown = true;
+    var reason = j && j.lwgate;
+    var title = reason === "budget" ? "You've reached this month's limit" : reason === "preview" ? "This is a members feature" : "You've used your tries";
+    var text = reason === "budget"
+      ? "Your membership has hit its monthly usage limit. It resets at the start of next month. Questions? Contact us at nusparklearnwow.com/support."
+      : "Join LearnWow to unlock all 24+ experiences. 7-day trial, then $29.99/month. Cancel anytime.";
+    var box = document.createElement("div");
+    box.setAttribute("style", "position:fixed;inset:0;z-index:2147483647;background:rgba(10,25,60,.72);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif");
+    var btn = "display:inline-block;margin:6px;padding:14px 28px;border-radius:40px;font-weight:800;font-size:17px;text-decoration:none;";
+    box.innerHTML =
+      '<div style="background:#123166;color:#fff;max-width:440px;width:100%;border-radius:22px;padding:30px 26px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)">' +
+      '<div style="font-size:40px;line-height:1;color:#F2B33D">&#10022;</div>' +
+      '<div style="font-size:24px;font-weight:800;margin:10px 0 8px">' + title + '</div>' +
+      '<div style="font-size:16px;line-height:1.5;opacity:.92;margin-bottom:18px">' + text + '</div>' +
+      (reason === "budget" ? "" : '<a target="_top" href="' + JOIN + '" style="' + btn + 'background:#F2B33D;color:#123166">Join Now</a>') +
+      '<a target="_top" href="' + LOGIN + '" style="' + btn + 'background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6)">Member Log In</a>' +
+      '<div><button type="button" style="margin-top:10px;background:none;border:0;color:#cfd8ef;font-size:14px;cursor:pointer;text-decoration:underline">Keep looking around</button></div>' +
+      "</div>";
+    box.querySelector("button").onclick = function () { box.remove(); shown = false; };
+    (document.body || document.documentElement).appendChild(box);
+  }
+
+  // Tries left: a small note for visitors ("3 of 8 tries left"), plus a friendly heads-up on the last one.
+  var nudged = false;
+  function tries(left, total) {
+    if (!(left >= 0)) return;
+    var el = document.getElementById("lwTries");
+    if (!el) {
+      el = document.createElement("div"); el.id = "lwTries";
+      el.setAttribute("style", "position:fixed;left:12px;bottom:12px;z-index:2147483646;background:#123166;color:#fff;border:2px solid #F2B33D;border-radius:999px;padding:7px 12px 7px 14px;font:600 13px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.3);display:flex;gap:8px;align-items:center");
+      (document.body || document.documentElement).appendChild(el);
+    }
+    el.innerHTML = '<span>&#10022; ' + left + (total ? ' of ' + total : '') + ' tr' + (left === 1 ? 'y' : 'ies') + ' left</span><a target="_top" href="' + JOIN + '" style="color:#F2B33D;font-weight:800;text-decoration:none">Join</a><button type="button" aria-label="Hide" style="background:none;border:0;color:#cfd8ef;font-size:15px;cursor:pointer;padding:0 0 0 2px">&times;</button>';
+    el.querySelector("button").onclick = function () { el.remove(); };
+    if (left === 1 && !nudged) {
+      nudged = true;
+      var n = document.createElement("div");
+      n.setAttribute("style", "position:fixed;left:12px;bottom:58px;z-index:2147483646;max-width:300px;background:#fff;color:#123166;border-radius:14px;padding:12px 14px;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 10px 26px rgba(0,0,0,.3);border-top:4px solid #F2B33D");
+      n.innerHTML = '<b>One try left!</b><br>Members get every one of the 24+ experiences, with no limits. Start with a 7-day trial and cancel anytime.<div style="margin-top:8px"><a target="_top" href="' + JOIN + '" style="background:#F2B33D;color:#123166;font-weight:800;padding:7px 14px;border-radius:999px;text-decoration:none">See membership</a> <button type="button" style="background:none;border:0;color:#123166;text-decoration:underline;cursor:pointer;font-size:13px">Got it</button></div>';
+      n.querySelector("button").onclick = function () { n.remove(); };
+      (document.body || document.documentElement).appendChild(n);
+      setTimeout(function () { if (n.parentNode) n.remove(); }, 15000);
+    }
+  }
+
+  var of = window.fetch && window.fetch.bind(window);
+  if (!of) return;
+  window.fetch = function (input, init) {
+    var url = typeof input === "string" ? input : (input && input.url) || String(input || "");
+    var u; try { u = new URL(url, location.href); } catch (e) { return of(input, init); }
+    if (u.origin !== location.origin || u.pathname.indexOf("/api/") !== 0) return of(input, init);
+    var act = Date.now() - lastAct < 30000;
+    return ready.then(function () {
+      var o = {}; if (init) for (var k in init) o[k] = init[k];
+      var hd = new Headers(o.headers || (typeof input !== "string" && input && input.headers) || undefined);
+      if (LW.pass) hd.set("x-lw-pass", LW.pass);
+      hd.set("x-lw-vid", LW.vid);
+      if (act) hd.set("x-lw-act", "1");
+      o.headers = hd;
+      return of(input, o);
+    }).then(function (r) {
+      if (r.status === 402) r.clone().json().then(function (j) { if (j && j.lwgate) show(j); }).catch(function () {});
+      try { var tl = r.headers.get("x-lw-left"); if (tl !== null && r.status !== 402) tries(parseInt(tl, 10), parseInt(r.headers.get("x-lw-total") || "0", 10)); } catch (e) {}
+      return r;
+    });
+  };
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start to Finish to Start | Learn...Wow! | NuSparkLearnWow</title>
+<meta name="description" content="Watch anything get built, step by step, from the blueprint to the finished thing. Then run it backward and follow every part to where it comes from. Wow...Who Knew?">
+<meta property="og:title" content="Start to Finish to Start | Wow...Who Knew?">
+<meta property="og:description" content="Build it forward. Trace it backward. How everyday things are planned, made and supplied. From NuSparkLearnWow.com.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Nunito:wght@400;600;700;800;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d2630; --soft:#5c6670; --steel:#26313b; --steel-dk:#161d24; --steel-lt:#e9edf1;
+  --orange:#ff7a1a; --orange-dk:#c4560a; --orange-lt:#fff1e6; --bp:#0d2b4a; --bp-line:#7cc7ff; --bp-ink:#e6f4ff;
+  --green:#2e9a5a; --green-lt:#e3f5e9; --yellow:#ffc531; --yellow-lt:#fff7dc; --red:#c8432a; --red-lt:#fde7e1;
+  --paper:#fffdf8; --floor:#eef0ec;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Nunito,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--floor);line-height:1.55}
+button,input,textarea,select{font-family:inherit}
+a{color:var(--bp)}
+[hidden]{display:none !important}
+
+/* header */
+.top{text-align:center;padding:22px 16px 12px}
+.top .kicker{display:inline-block;font-size:12.5px;letter-spacing:2px;text-transform:uppercase;font-weight:900;color:var(--orange-dk);background:var(--orange-lt);border:2px solid var(--orange);border-radius:30px;padding:3px 14px;margin-bottom:8px}
+.top h1{font-family:Oswald,Impact,sans-serif;font-weight:700;font-size:clamp(32px,6.4vw,60px);margin:0;letter-spacing:.5px;line-height:1.05;text-transform:uppercase;color:var(--steel)}
+.top h1 .arr{color:var(--orange);font-size:.8em;padding:0 .12em}
+.top h1 .fin{color:var(--bp)}
+.top .tagline{font-size:clamp(16px,2.4vw,19px);color:var(--soft);font-weight:700;margin:8px auto 0;max-width:720px}
+
+/* banner */
+.banner{display:flex;gap:6px;overflow:hidden;height:150px;background:var(--steel-dk)}
+.banner figure{margin:0;flex:1 1 0;min-width:110px;position:relative;overflow:hidden;background:#26313b}
+.banner img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .6s}
+.banner img.on{opacity:1}
+.banner figure.emoji{display:flex;align-items:center;justify-content:center;font-size:44px;background:linear-gradient(135deg,#0d2b4a,#26313b)}
+.banner figcaption{position:absolute;left:0;right:0;bottom:0;padding:4px 8px;font-size:12px;font-weight:800;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.7))}
+@media(max-width:700px){.banner{height:100px}.banner figure{min-width:0}.banner figure:nth-child(n+5){display:none}.banner figcaption{font-size:10.5px;padding:3px 5px}}
+
+main{max-width:1100px;margin:0 auto;padding:18px 14px 0}
+
+/* picker card */
+.pick{background:#fff;border-radius:20px;padding:20px 20px 18px;box-shadow:0 6px 22px rgba(22,29,36,.14);border-top:6px solid var(--orange)}
+.pick label.big{display:block;font-family:Oswald,Impact,sans-serif;font-weight:700;font-size:23px;letter-spacing:.3px;color:var(--steel);margin-bottom:8px;text-transform:uppercase}
+.sbar{display:flex;gap:10px}
+.sbar input{flex:1;min-width:0;font-size:18px;padding:13px 16px;border:3px solid #d3d9df;border-radius:14px}
+.sbar input:focus,.qbox textarea:focus{outline:none;border-color:var(--bp)}
+.btn{border:0;background:var(--orange);color:#fff;font-weight:900;font-size:17px;padding:12px 22px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 var(--orange-dk);white-space:nowrap}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--orange-dk)}
+.btn.blue{background:var(--bp);box-shadow:0 4px 0 #061a2e}
+.btn.ghost{background:#fff;color:var(--steel);border:2px solid #cfd6dd;box-shadow:none}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.hint{font-size:14.5px;color:var(--soft);margin:7px 2px 0;font-weight:700}
+@media(max-width:560px){.sbar{flex-direction:column}.btn{width:100%}}
+.toggles{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:16px}
+@media(max-width:760px){.toggles{grid-template-columns:1fr}}
+.tog b{display:block;font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soft);margin-bottom:6px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{flex:1 1 140px;border:3px solid #d3d9df;background:#fff;color:var(--ink);font-weight:900;font-size:16px;padding:10px 12px;border-radius:14px;cursor:pointer;text-align:center}
+.seg button small{display:block;font-weight:700;font-size:12.5px;color:var(--soft)}
+.seg button.on{border-color:var(--steel);background:var(--steel);color:#fff}
+.seg button.on small{color:#c9d3dc}
+
+/* the two sides and the 8 category doors */
+.sides{margin-top:18px}
+.sidetabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sidetabs button{border:0;border-radius:14px 14px 0 0;padding:12px 10px;font-family:Oswald,Impact,sans-serif;font-size:19px;letter-spacing:.4px;text-transform:uppercase;cursor:pointer;background:var(--steel-lt);color:var(--soft)}
+.sidetabs button.on{background:var(--steel);color:#fff}
+.sidetabs button small{display:block;font-family:Nunito,sans-serif;text-transform:none;letter-spacing:0;font-size:13px;font-weight:700;opacity:.85}
+.doorsbox{background:var(--steel);border-radius:0 0 16px 16px;padding:12px}
+.doors{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:820px){.doors{grid-template-columns:repeat(2,1fr)}}
+.door{position:relative;border:0;border-radius:12px;background:#fff;cursor:pointer;padding:12px 10px 12px;text-align:center;font-weight:900;color:var(--steel);font-size:16px;line-height:1.2;border-bottom:5px solid #c8d0d8;transition:transform .12s}
+.door:hover{transform:translateY(-2px)}
+.door .ic{display:block;font-size:34px;line-height:1;margin-bottom:6px}
+.door small{display:block;font-weight:700;font-size:12.5px;color:var(--soft);margin-top:3px}
+.door.on{background:var(--orange-lt);border-bottom-color:var(--orange);outline:3px solid var(--orange)}
+.items{margin-top:10px;background:#fff;border-radius:12px;padding:12px}
+.items h4{margin:0 0 8px;font-family:Oswald,Impact,sans-serif;text-transform:uppercase;color:var(--steel);font-size:18px;letter-spacing:.3px}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:820px){.chips{grid-template-columns:repeat(2,1fr)}}
+.chip{border:2px solid #d3d9df;background:#fff;border-radius:12px;padding:9px 10px;font-weight:800;font-size:15px;cursor:pointer;text-align:left;color:var(--ink);display:flex;gap:8px;align-items:center}
+.chip:hover{border-color:var(--orange);background:var(--orange-lt)}
+.chip span{font-size:20px;flex:none}
+
+/* the workbench screen */
+.deskwrap{margin:22px 0 0;background:var(--steel);border-radius:22px;padding:12px;box-shadow:0 10px 30px rgba(22,29,36,.32)}
+.paper{background:var(--paper);border-radius:14px;overflow:hidden}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--steel-dk);color:#fff;padding:8px 16px;font-weight:800;font-size:14px;letter-spacing:.6px;text-transform:uppercase}
+.bar .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--orange);margin-right:8px;vertical-align:middle}
+body.working .bar .dot{animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.display{padding:20px 22px 26px;min-height:320px}
+@media(max-width:560px){.display{padding:16px 12px 22px}}
+
+/* controls */
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.ctrl button{border:0;background:var(--steel-lt);color:var(--ink);font-weight:800;font-size:14px;padding:7px 14px;border-radius:30px;cursor:pointer}
+.ctrl button.stop{background:var(--red-lt);color:#8c2a14}
+.ctrl button.on{background:var(--orange);color:#fff}
+body:not(.working):not(.playing) .ctrl button.stop{opacity:.4;pointer-events:none}
+
+/* home */
+.welcome h2{font-family:Oswald,Impact,sans-serif;font-size:28px;color:var(--steel);margin:0 0 6px;text-transform:uppercase}
+.welcome .sub{margin:0 0 10px;font-size:17px}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+@media(max-width:760px){.steps3{grid-template-columns:1fr}}
+.steps3 div{background:var(--steel-lt);border-radius:14px;padding:14px}
+.steps3 b{display:flex;align-items:center;gap:8px;color:var(--steel);font-size:17px}
+.steps3 b span{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--orange);color:#fff;font-size:15px;flex:none}
+.steps3 p{margin:6px 0 0}
+.diff{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:760px){.diff{grid-template-columns:1fr}}
+.diff div{border:2px solid #e2e6ea;border-radius:14px;padding:10px 14px;font-size:15.5px}
+.diff div b{color:var(--steel)}
+.tryrow{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tryrow b{color:var(--soft);font-size:13px;letter-spacing:1.2px;text-transform:uppercase;margin-right:4px}
+
+/* loading + errors */
+.loading{display:flex;align-items:center;gap:14px;justify-content:center;padding:40px 10px;font-weight:800;font-size:18px;color:var(--steel);text-align:center}
+.loading .gear{font-size:34px;display:inline-block;animation:spin 2.4s linear infinite}
+.loading.small{padding:18px 6px;font-size:16px}
+.loading.small .gear{font-size:24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{background:var(--red-lt);border:2px solid #f2b8aa;border-radius:14px;padding:14px;font-weight:700}
+.err .row{margin-top:10px}
+.note{background:var(--yellow-lt);border:2px solid var(--yellow);border-radius:14px;padding:14px 16px;font-weight:700}
+
+/* lesson head + stage track */
+.lhead{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.lhead .em{font-size:44px;line-height:1;flex:none}
+.lhead h2{font-family:Oswald,Impact,sans-serif;font-size:clamp(24px,4vw,32px);margin:0;color:var(--steel);text-transform:uppercase;line-height:1.1}
+.lhead .dirtag{display:inline-block;font-size:12.5px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;padding:2px 10px;border-radius:20px;background:var(--orange-lt);color:var(--orange-dk);border:2px solid var(--orange);margin-bottom:4px}
+.lhead .dirtag.back{background:#e5f2ff;color:var(--bp);border-color:var(--bp-line)}
+.lhead p{margin:2px 0 0;color:var(--soft);font-weight:700}
+.track{display:flex;gap:4px;margin:12px 0 14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.track button{flex:1 0 54px;border:0;background:var(--steel-lt);border-radius:10px;padding:6px 4px 5px;cursor:pointer;font-weight:900;color:var(--soft);font-size:12px;line-height:1.15;position:relative}
+.track button .i{display:block;font-size:20px;line-height:1.2}
+.track button.done{background:#dfe9e3;color:var(--green)}
+.track button.cur{background:var(--orange);color:#fff;box-shadow:0 3px 0 var(--orange-dk)}
+.track button.wait{opacity:.6}
+.track.back button.cur{background:var(--bp);box-shadow:0 3px 0 #061a2e}
+
+/* the stage: blueprint drawing + real photo */
+.stage{display:grid;grid-template-columns:3fr 2fr;gap:12px;align-items:start}
+@media(max-width:820px){.stage{grid-template-columns:1fr}}
+.board{position:relative;background:var(--bp);border-radius:14px;overflow:hidden;border:4px solid #1d4a75;box-shadow:inset 0 0 0 2px #0a2440}
+.board svg{display:block;width:100%;height:auto}
+.board .boardtag{position:absolute;left:10px;top:8px;font:700 11px "Roboto Mono",monospace;letter-spacing:1px;color:#9fd3ff;text-transform:uppercase;background:rgba(13,43,74,.8);padding:2px 6px;border-radius:5px}
+.board .drafting{position:absolute;right:10px;top:8px;font:700 11px "Roboto Mono",monospace;color:#ffd2ad;background:rgba(13,43,74,.85);padding:2px 8px;border-radius:5px}
+.board .drafting::before{content:"✏️ ";}
+.board svg .L{transition:opacity .5s}
+.board svg .L.off{opacity:0}
+.board svg .L.old *{stroke:#cfe8ff}
+.board svg .L.old text{fill:#cfe8ff;stroke:none}
+.board svg .L.new *{stroke:#ff9a3d}
+.board svg .L.new text{fill:#ffb36b;stroke:none}
+.board svg .L.new{animation:glow 1.6s ease-in-out 2}
+@keyframes glow{50%{opacity:.55}}
+.board svg .L.ghost{opacity:.18}
+.photo{margin:0;background:#fff;border-radius:14px;overflow:hidden;border:2px solid #e2e6ea}
+.photo .ph{position:relative;background:#e9edf1;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;color:var(--soft);font-weight:800;font-size:14px;text-align:center;padding:10px}
+.photo .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s}
+.photo .ph img.on{opacity:1}
+.photo figcaption{font-size:12px;color:var(--soft);padding:6px 10px;line-height:1.35}
+.photo figcaption b{color:var(--ink)}
+
+/* step card */
+.card{margin-top:14px;background:#fff;border:2px solid #e2e6ea;border-radius:16px;padding:16px 18px}
+.card .kick{font:700 12px "Roboto Mono",monospace;letter-spacing:1.4px;text-transform:uppercase;color:var(--orange-dk)}
+.track.back + .stage + .card .kick,.card.back .kick{color:var(--bp)}
+.card h3{font-family:Oswald,Impact,sans-serif;font-size:clamp(22px,3.4vw,28px);margin:2px 0 8px;color:var(--steel);text-transform:uppercase;line-height:1.15}
+.card .txt{font-size:17px;margin:0 0 12px}
+.facts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:6px 0 12px}
+@media(max-width:620px){.facts{grid-template-columns:1fr}}
+.fact{background:var(--steel-lt);border-radius:12px;padding:9px 12px;font-size:15px}
+.fact b{display:block;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--soft)}
+.fact.wide{grid-column:1/-1}
+.addchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}
+.addchips span{background:var(--orange);color:#fff;border-radius:20px;padding:2px 10px;font-weight:800;font-size:14px}
+.math{background:#fbfcf7;border:2px dashed #9fb3c4;border-radius:12px;padding:10px 14px;margin:0 0 12px;background-image:linear-gradient(#e7eef5 1px,transparent 1px);background-size:100% 26px}
+.math b{display:block;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--bp)}
+.math .work{font:500 15px/1.7 "Roboto Mono",monospace;color:var(--ink);margin:2px 0}
+.math .res{font-weight:900;color:var(--bp);font-size:16px}
+.math .res::before{content:"= ";}
+.wow{display:flex;gap:10px;align-items:flex-start;background:var(--yellow-lt);border-left:6px solid var(--yellow);border-radius:10px;padding:10px 14px;font-size:15.5px}
+.wow b{display:block;font-family:Oswald,Impact,sans-serif;text-transform:uppercase;letter-spacing:.3px;color:#8a6500;font-size:15px}
+.wow .bulb{font-size:24px;flex:none}
+.list{margin:6px 0 12px;padding-left:20px}
+.list li{margin:3px 0}
+.planners{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.planners span{background:#e5f2ff;color:var(--bp);border:2px solid var(--bp-line);border-radius:20px;padding:2px 12px;font-weight:800;font-size:14px}
+.roadmap{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+@media(max-width:620px){.roadmap{grid-template-columns:1fr}}
+.roadmap li{background:var(--steel-lt);border-radius:10px;padding:7px 10px;font-size:15px;display:flex;gap:8px;align-items:flex-start}
+.roadmap li .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--steel);color:#fff;font-weight:900;font-size:13px;display:inline-flex;align-items:center;justify-content:center;margin-top:1px}
+.roadmap li b{display:block}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 12px}
+@media(max-width:620px){.tiles{grid-template-columns:1fr}}
+.tile{background:var(--steel);color:#fff;border-radius:12px;padding:10px 12px;text-align:center}
+.tile b{display:block;font-size:11.5px;letter-spacing:1.3px;text-transform:uppercase;color:#ffb36b}
+.tile span{font-weight:900;font-size:17px}
+.sub3{font-family:Oswald,Impact,sans-serif;text-transform:uppercase;color:var(--steel);font-size:19px;margin:14px 0 6px;letter-spacing:.3px}
+.terms{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(max-width:620px){.terms{grid-template-columns:1fr}}
+.terms div{border:2px solid #e2e6ea;border-radius:12px;padding:8px 12px;font-size:15px}
+.terms b{color:var(--bp)}
+.deeper{display:flex;flex-direction:column;gap:6px}
+.deeper button{border:2px solid var(--bp-line);background:#f1f8ff;color:var(--bp);font-weight:800;font-size:15px;text-align:left;border-radius:12px;padding:8px 12px;cursor:pointer}
+.flipbox{margin-top:16px;background:var(--steel);color:#fff;border-radius:16px;padding:16px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.flipbox p{margin:0;flex:1 1 260px;font-weight:700;font-size:16px}
+.flipbox b{font-family:Oswald,Impact,sans-serif;font-size:21px;text-transform:uppercase;display:block;color:#ffb36b}
+
+/* nav + play */
+.nav{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:14px}
+.nav .grp{display:flex;gap:8px;flex-wrap:wrap}
+.nav .btn{font-size:16px;padding:10px 18px}
+.nav .count{font-weight:900;color:var(--soft);font-size:14px}
+.toggle{border:2px solid #cfd6dd;background:#fff;border-radius:30px;padding:8px 14px;font-weight:800;font-size:14.5px;cursor:pointer;color:var(--ink)}
+.toggle.on{background:var(--bp);border-color:var(--bp);color:#fff}
+
+/* clarify */
+.clar h3{font-family:Oswald,Impact,sans-serif;text-transform:uppercase;color:var(--steel);margin:0 0 8px;font-size:24px}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.opts button{border:3px solid var(--steel);background:#fff;color:var(--steel);font-weight:900;font-size:16px;padding:9px 16px;border-radius:14px;cursor:pointer}
+.opts button:hover{background:var(--steel);color:#fff}
+
+/* ask Mr. Paul */
+.askbar{margin-top:16px;border-top:3px solid var(--orange);padding-top:12px}
+.askbar h3{font-family:Oswald,Impact,sans-serif;font-size:21px;color:var(--steel);margin:0 0 4px;text-transform:uppercase}
+.askbar .hint{margin:0 0 8px}
+.qbox{display:flex;gap:8px;align-items:flex-end}
+.qbox textarea{flex:1;min-width:0;min-height:58px;font-size:16.5px;padding:10px 12px;border:2px solid #d3d9df;border-radius:12px;resize:vertical}
+@media(max-width:560px){.qbox{flex-direction:column;align-items:stretch}}
+.thread{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.msg{border-radius:14px;padding:10px 14px;font-size:16px;max-width:92%}
+.msg.me{align-self:flex-end;background:var(--steel);color:#fff}
+.msg.mp{align-self:flex-start;background:var(--orange-lt);border:2px solid #ffd2ad}
+.msg.mp b{display:block;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--orange-dk)}
+.msg p{margin:4px 0}
+
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.tools button{border:2px solid #cfd6dd;background:#fff;border-radius:30px;padding:7px 14px;font-weight:800;font-size:14px;cursor:pointer}
+
+/* print: the whole lesson */
+.whole .wstep{border-top:2px solid #e2e6ea;padding-top:10px;margin-top:12px;break-inside:avoid}
+.whole h4{font-family:Oswald,Impact,sans-serif;text-transform:uppercase;font-size:20px;margin:0 0 4px;color:var(--steel)}
+.whole p{margin:4px 0}
+
+/* Mr. Paul host */
+.mphost{display:flex;align-items:center;gap:14px;max-width:1100px;margin:22px auto 4px;padding:0 14px}
+.mphost .mpfig{width:96px;flex:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+.mphost .mpfig svg{width:100%;height:auto;display:block}
+.mphost .mpbub{position:relative;background:#fff;color:var(--ink);border:2px solid var(--orange);border-radius:16px;padding:10px 16px;font-weight:700;font-size:16px;line-height:1.35;max-width:440px}
+.mphost .mpbub::before{content:"";position:absolute;left:-11px;top:50%;margin-top:-9px;border:9px solid transparent;border-right-color:var(--orange);border-left:0}
+.mphost .mpbub::after{content:"";position:absolute;left:-7px;top:50%;margin-top:-7px;border:7px solid transparent;border-right-color:#fff;border-left:0}
+@media(max-width:560px){.mphost .mpfig{width:74px}.mphost .mpbub{font-size:15px}}
+
+footer{max-width:1100px;margin:10px auto 30px;padding:14px;font-size:13.5px;color:var(--soft);border-top:2px solid #dde2e6}
+footer p{margin:6px 0}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--steel-dk);color:#fff;font-weight:800;padding:10px 18px;border-radius:30px;z-index:99;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+
+@media print{
+  .top,.banner,.pick,.mphost,footer,.ctrl,.nav,.askbar,.noprint,.tools,.track{display:none !important}
+  body{background:#fff}.deskwrap{background:none;box-shadow:none;padding:0}.bar{display:none}.display{padding:0}
+  .card,.wstep,.board,.photo{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="kicker">Build it forward · Trace it backward</div>
+  <h1>Start <span class="arr">▸</span> Finish <span class="arr">▸</span> <span class="fin">Start</span></h1>
+  <p class="tagline">Watch anything get built, step by step, from the blueprint to the finished thing. Then run it backward and follow every part to where it comes from. Wow...Who Knew?</p>
+</header>
+
+<div class="banner" id="banner" aria-hidden="true"></div>
+
+<main>
+  <section class="pick" aria-label="Pick something to build">
+    <label class="big" for="mainQ">What do you want to see built?</label>
+    <div class="sbar">
+      <input type="text" id="mainQ" maxlength="120" autocomplete="off">
+      <button class="btn" type="button" id="mainGo">Start Building</button>
+    </div>
+    <p class="hint">Type anything: a traffic light, a shopping cart, GPS, a pencil, an outlet. Or pick from the workshop below.</p>
+    <div class="toggles">
+      <div class="tog"><b>Which way?</b>
+        <div class="seg" id="dirSeg">
+          <button type="button" data-v="forward" class="on">▶ Start to Finish<small>Plan it, then build it step by step</small></button>
+          <button type="button" data-v="backward">◀ Finish to Start<small>Trace it back to where it all comes from</small></button>
+        </div>
+      </div>
+      <div class="tog"><b>Explain it for</b>
+        <div class="seg" id="levelSeg">
+          <button type="button" data-v="adult" class="on">🧑 Grown-Ups<small>All the real detail</small></button>
+          <button type="button" data-v="kid">🧒 Kids<small>Simple words, same journey</small></button>
+        </div>
+      </div>
+    </div>
+    <div class="sides">
+      <div class="sidetabs" id="sideTabs">
+        <button type="button" data-v="home" class="on">🏠 Home Life<small>Utilities, appliances, gadgets, the world outside</small></button>
+        <button type="button" data-v="industry">🏭 Industry &amp; Manufacturing<small>Parts, materials, machines, big systems</small></button>
+      </div>
+      <div class="doorsbox">
+        <div class="doors" id="doors"></div>
+        <div class="items" id="items" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="deskwrap">
+    <div class="paper">
+      <div class="bar"><span><span class="dot"></span><span id="barLeft">The Workbench</span></span><span id="barRight">Ready</span></div>
+      <div class="display" id="display" aria-live="polite"></div>
+    </div>
+  </div>
+</main>
+
+<!-- Mr. Paul, your Start to Finish to Start host (cartoon drawn in code: hard hat and a rolled-up blueprint) -->
+<div class="mphost" role="note" aria-label="Mr. Paul, your host"><div class="mpfig"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -12 320 392" class="mph-svg" aria-hidden="true"><defs><linearGradient id="sf-skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6d2bb"></stop><stop offset="1" stop-color="#eebc9f"></stop></linearGradient><linearGradient id="sf-coat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#45525e"></stop><stop offset="1" stop-color="#2c3640"></stop></linearGradient><linearGradient id="sf-lens" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8dde0" stop-opacity=".45"></stop><stop offset="1" stop-color="#aeb6bc" stop-opacity=".3"></stop></linearGradient><linearGradient id="sf-glens" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f6ff"></stop><stop offset=".6" stop-color="#a9d8f2"></stop><stop offset="1" stop-color="#7fbfe3"></stop></linearGradient></defs><path d="M40 380 C44 318 78 290 122 282 L160 300 L198 282 C242 290 276 318 280 380 Z" fill="url(#sf-coat)" stroke="#1b2229" stroke-width="3"></path><path d="M160 302 L204 288 C212 324 212 356 210 380 L150 380 Z" fill="#3a4652" stroke="#1b2229" stroke-width="2.5"></path><path d="M60 360 L120 300" stroke="#ffd23f" stroke-width="9" opacity=".9"/><path d="M260 360 L200 300" stroke="#ffd23f" stroke-width="9" opacity=".9"/><g fill="#e8eef5"><circle cx="172" cy="322" r="4.5"></circle><circle cx="196" cy="322" r="4.5"></circle><circle cx="172" cy="350" r="4.5"></circle><circle cx="196" cy="350" r="4.5"></circle></g><rect x="70" y="330" width="56" height="22" rx="4" fill="#c99a2e"></rect><text x="98" y="345.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#1f2a44">Mr. Paul</text><path d="M126 282 Q160 304 194 282 L190 298 Q160 318 130 298 Z" fill="#ff7a1a" stroke="#1b2229" stroke-width="2"></path><path d="M152 304 L168 304 L174 326 L160 318 L146 326 Z" fill="#ff7a1a" stroke="#1b2229" stroke-width="2"></path><!-- neck --><path d="M134 240 L136 290 Q160 304 184 290 L186 240 Z" fill="#e8b294"></path><!-- side hair (behind head), soft and fluffy --><g fill="#dedad2"><ellipse cx="82" cy="130" rx="14" ry="22"></ellipse><ellipse cx="78" cy="152" rx="18" ry="30"></ellipse><ellipse cx="76" cy="182" rx="14" ry="24"></ellipse><ellipse cx="88" cy="206" rx="12" ry="16"></ellipse><ellipse cx="238" cy="130" rx="14" ry="22"></ellipse><ellipse cx="242" cy="152" rx="18" ry="30"></ellipse><ellipse cx="244" cy="182" rx="14" ry="24"></ellipse><ellipse cx="232" cy="206" rx="12" ry="16"></ellipse></g><g stroke="#c2bdb3" stroke-width="1.8" fill="none" stroke-linecap="round"><path d="M70 132 C64 150 64 170 70 190"></path><path d="M78 140 C74 160 74 184 82 206"></path><path d="M66 124 C62 118 60 112 61 106"></path><path d="M250 132 C256 150 256 170 250 190"></path><path d="M242 140 C246 160 246 184 238 206"></path><path d="M254 124 C258 118 260 112 259 106"></path></g><!-- ears --><ellipse cx="82" cy="168" rx="13" ry="20" fill="#eab597"></ellipse><ellipse cx="238" cy="168" rx="13" ry="20" fill="#eab597"></ellipse><path d="M84 158 Q78 168 85 178" stroke="#cf957a" stroke-width="2.5" fill="none" stroke-linecap="round"></path><path d="M236 158 Q242 168 235 178" stroke="#cf957a" stroke-width="2.5" fill="none" stroke-linecap="round"></path><!-- head --><path d="M160 42 C216 42 240 86 240 142 C240 210 214 254 160 254 C106 254 80 210 80 142 C80 86 104 42 160 42 Z" fill="url(#sf-skin)"></path><!-- thinning hair on top --><path d="M90 118 C88 74 116 46 160 44 C204 46 232 74 230 118 C222 96 206 82 186 80 C176 70 146 70 134 80 C114 82 98 96 90 118 Z" fill="#d6d1c8"></path><g stroke="#b3ada2" stroke-width="2" fill="none" stroke-linecap="round"><path d="M110 84 C122 62 140 52 160 50"></path><path d="M122 78 C134 62 150 56 166 56"></path><path d="M210 84 C198 62 180 52 160 50"></path><path d="M198 78 C186 62 170 56 154 58"></path><path d="M96 106 C100 90 108 80 120 72"></path><path d="M224 106 C220 90 212 80 200 72"></path><path d="M146 72 C150 64 158 60 166 62"></path><path d="M160 70 C164 62 172 58 180 60"></path></g><ellipse cx="160" cy="58" rx="22" ry="7" fill="#fff" opacity=".22"></ellipse><!-- hard hat --><path d="M88 106 C86 54 118 24 160 24 C202 24 234 54 232 106 Z" fill="#ff8a1f" stroke="#b85a0c" stroke-width="3"></path><path d="M146 28 L146 104 M174 28 L174 104" stroke="#e06f0c" stroke-width="7" stroke-linecap="round"></path><rect x="70" y="98" width="180" height="16" rx="8" fill="#ff9a35" stroke="#b85a0c" stroke-width="3"></rect><ellipse cx="128" cy="50" rx="18" ry="7" fill="#fff" opacity=".35"></ellipse><g><path d="M108 136 Q126 126 146 132" stroke="#8c847a" stroke-width="5" fill="none" stroke-linecap="round"></path><path d="M174 132 Q194 126 212 136" stroke="#8c847a" stroke-width="5" fill="none" stroke-linecap="round"></path></g><!-- eyes --><ellipse cx="128" cy="158" rx="10" ry="7.5" fill="#fff"></ellipse><ellipse cx="192" cy="158" rx="10" ry="7.5" fill="#fff"></ellipse><circle cx="129" cy="158" r="5.5" fill="#7d9277"></circle><circle cx="193" cy="158" r="5.5" fill="#7d9277"></circle><circle cx="129" cy="158" r="2.6" fill="#22262b"></circle><circle cx="193" cy="158" r="2.6" fill="#22262b"></circle><circle cx="131" cy="156" r="1.4" fill="#fff"></circle><circle cx="195" cy="156" r="1.4" fill="#fff"></circle><!-- smile crinkles --><path d="M112 164 Q118 170 126 168" stroke="#d29c80" stroke-width="2" fill="none" stroke-linecap="round"></path><path d="M208 164 Q202 170 194 168" stroke="#d29c80" stroke-width="2" fill="none" stroke-linecap="round"></path><!-- glasses: dark grey translucent rectangular frames --><rect x="100" y="138" width="56" height="40" rx="8" fill="url(#sf-lens)" stroke="#555b63" stroke-width="6"></rect><rect x="164" y="138" width="56" height="40" rx="8" fill="url(#sf-lens)" stroke="#555b63" stroke-width="6"></rect><path d="M156 152 Q160 148 164 152" stroke="#555b63" stroke-width="5" fill="none"></path><path d="M100 148 L84 146" stroke="#555b63" stroke-width="5" stroke-linecap="round"></path><path d="M220 148 L236 146" stroke="#555b63" stroke-width="5" stroke-linecap="round"></path><circle cx="104" cy="142" r="2" fill="#9aa1a9"></circle><circle cx="216" cy="142" r="2" fill="#9aa1a9"></circle><!-- nose --><path d="M160 168 C156 186 150 196 152 202 C156 208 166 208 170 202" stroke="#cf957a" stroke-width="3.5" fill="none" stroke-linecap="round"></path><!-- rosy cheeks --><ellipse cx="114" cy="200" rx="15" ry="9" fill="#f29a8a" opacity=".45"></ellipse><ellipse cx="206" cy="200" rx="15" ry="9" fill="#f29a8a" opacity=".45"></ellipse><!-- light stubble around mouth and chin --><path d="M122 212 C128 244 192 244 198 212 C198 234 184 252 160 252 C136 252 122 234 122 212 Z" fill="#c9b6a6" opacity=".22"></path><g><path d="M136 220 Q160 236 184 220" stroke="#b5635a" stroke-width="4.5" fill="none" stroke-linecap="round"></path><path d="M132 218 Q134 222 137 221" stroke="#b5635a" stroke-width="3" fill="none" stroke-linecap="round"></path><path d="M188 218 Q186 222 183 221" stroke="#b5635a" stroke-width="3" fill="none" stroke-linecap="round"></path></g><!-- rolled-up blueprint --><g transform="rotate(-28 245 330)"><rect x="196" y="314" width="96" height="30" rx="15" fill="#2f6fb3" stroke="#173a63" stroke-width="2.5"></rect><path d="M212 322 h52 M212 330 h40 M212 338 h46" stroke="#cfe6ff" stroke-width="2" stroke-linecap="round"></path><ellipse cx="292" cy="329" rx="9" ry="15" fill="#e6f4ff" stroke="#173a63" stroke-width="2.5"></ellipse><path d="M292 321 a5 8 0 1 1 -1 16" fill="none" stroke="#2f6fb3" stroke-width="2"></path></g></svg></div><div class="mpbub" aria-live="polite">Pick anything. I'll show you how it's built, and where it all comes from!</div></div>
+
+<footer>
+  <p>Lessons are written live with AI from well-established engineering and manufacturing knowledge. Times, distances and counts are typical estimates, and real processes vary by maker and region. AI can make mistakes, so double-check anything important.</p>
+  <p>This is education, not instructions for doing electrical, gas or plumbing work yourself. Always use a licensed professional for those. Blueprint drawings are AI sketches, not engineering plans. Photos from Wikimedia Commons and Wikipedia, credited on each photo.</p>
+  <p>Start to Finish to Start is part of <a href="https://nusparklearnwow.com" target="_blank" rel="noopener">NuSparkLearnWow.com</a> from NuSpark Publishing.</p>
+</footer>
+
+<script>
+/* ---------- the workshop: 2 sides, 4 doors each, 8 things behind every door ---------- */
+const SIDES = {
+  home: [
+    { id: "power", icon: "⚡", name: "Power & Utilities", blurb: "What comes into the house", items: [
+      ["🔌", "Electrical outlet"], ["🚰", "Tap water at the faucet"], ["🚽", "Toilet flush and the sewer"], ["🔥", "Gas stove flame"],
+      ["📶", "Home internet and Wi-Fi"], ["♨️", "Water heater"], ["☀️", "Rooftop solar panels"], ["🌡️", "Home furnace"]] },
+    { id: "appl", icon: "🍽️", name: "Home Appliances", blurb: "The machines we live with", items: [
+      ["🍽️", "Dishwasher"], ["🧊", "Refrigerator"], ["🧺", "Washing machine"], ["📡", "Microwave oven"],
+      ["❄️", "Air conditioner"], ["☕", "Coffee maker"], ["🧹", "Vacuum cleaner"], ["🍞", "Toaster"]] },
+    { id: "gadget", icon: "📺", name: "Gadgets & Entertainment", blurb: "Screens, signals and sound", items: [
+      ["📺", "Streaming stick and TV remote"], ["📱", "Smartphone"], ["🖥️", "Flat-screen TV"], ["🔊", "Smart speaker"],
+      ["🎮", "Video game console"], ["🎧", "Wireless earbuds"], ["💻", "Laptop computer"], ["🧭", "GPS navigation"]] },
+    { id: "world", icon: "🚦", name: "Out in the World", blurb: "Things we pass every day", items: [
+      ["🚦", "Traffic light"], ["🛒", "Shopping cart"], ["💡", "Street light"], ["📡", "Cell phone tower"],
+      ["🌉", "Bridge"], ["🏙️", "Skyscraper"], ["🛗", "Elevator"], ["🏧", "ATM"]] }
+  ],
+  industry: [
+    { id: "parts", icon: "🔩", name: "Parts & Components", blurb: "What's inside everything", items: [
+      ["🔲", "Microchip"], ["⚙️", "Electric motor"], ["🔋", "Lithium-ion battery"], ["🟩", "Circuit board"],
+      ["💡", "LED light bulb"], ["🔘", "Ball bearing"], ["👆", "Touchscreen"], ["🔩", "Screws and bolts"]] },
+    { id: "mat", icon: "🧱", name: "Materials", blurb: "How raw stuff becomes usable", items: [
+      ["🏗️", "Steel beam"], ["🧴", "Plastic bottle"], ["🪟", "Window glass"], ["📦", "Cardboard box"],
+      ["🥫", "Aluminum can"], ["🧱", "Concrete"], ["🧵", "Copper wire"], ["📄", "Paper"]] },
+    { id: "mach", icon: "🚜", name: "Machines & Vehicles", blurb: "The things that move and make", items: [
+      ["🚗", "Car"], ["🏋️", "Forklift"], ["🦾", "Factory robot arm"], ["🌬️", "Wind turbine"],
+      ["✈️", "Jet engine"], ["🚚", "Delivery truck"], ["🚜", "Tractor"], ["🖨️", "3D printer"]] },
+    { id: "sys", icon: "🌐", name: "Big Systems", blurb: "Giant machines made of machines", items: [
+      ["🏭", "Car assembly line"], ["📦", "Distribution warehouse"], ["🗄️", "Data center"], ["⚡", "Power plant"],
+      ["💧", "Water treatment plant"], ["🚢", "Cargo port"], ["🛰️", "GPS satellites"], ["🧳", "Airport baggage system"]] }
+  ]
+};
+
+// Banner: 8 real photos (4 on phones), picked at random each visit, with drawn tiles if a photo won't load
+const BANNER = ["Traffic light", "Assembly line", "Container ship", "Integrated circuit", "Electrical substation", "Industrial robot",
+  "Tower crane", "Printed circuit board", "Wind turbine", "Forklift", "Steelmaking", "Warehouse", "Transformer", "Dishwasher", "Shopping cart", "Cell site"];
+const FALLBACK_TILES = [["🚦", "Out in the world"], ["🏭", "Factories"], ["🔩", "Parts"], ["🚢", "Supply chain"], ["⚡", "Power"], ["📐", "Planning"], ["🦾", "Machines"], ["📦", "Delivery"]];
+const BAR_RIGHT = { home: "Ready", outline: "Planning", clarify: "Quick Question", plan: "The Blueprint", step: "Building", trace: "Tracing Back", done: "Finished", whole: "Whole Lesson" };
+const PHOTO_BAD = /\b(nude|naked|nsfw|sex|erotic|corpse|dead body|gore|blood|weapon|gun|execution|torture|skull|drug|accident|crash|fire damage)\b/i;
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false && k !== "") e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const cleanAI = v => typeof v === "string" ? v.replace(/<\/?cite\b[^>]*>/gi, "").replace(/\*\*/g, "").replace(/[ \t]{2,}/g, " ").trim()
+  : Array.isArray(v) ? v.map(cleanAI) : (v && typeof v === "object") ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, cleanAI(x)])) : v;
+function toast(msg){ const t = el("div", { class: "toast", text: msg }); document.body.append(t); setTimeout(() => t.remove(), 2200); }
+async function copyText(text){
+  try { await navigator.clipboard.writeText(text); toast("Copied!"); }
+  catch(e){ const ta = el("textarea", {}); ta.value = text; document.body.append(ta); ta.select(); try { document.execCommand("copy"); toast("Copied!"); } catch(x){} ta.remove(); }
+}
+const words = s => String(s || "").split(/\s+/).filter(Boolean).length;
+
+/* every AI call goes through here, so Stop can cancel them all */
+const inflight = new Set();
+function setWorking(){ document.body.classList.toggle("working", inflight.size > 0); }
+async function api(body){
+  const ctl = new AbortController();
+  inflight.add(ctl); setWorking();
+  try {
+    const r = await fetch("/api/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: ctl.signal });
+    let j = {}; try { j = await r.json(); } catch(e){}
+    if (r.status === 402) throw new Error("Join LearnWow to keep building with Start to Finish to Start.");
+    if (!r.ok) throw new Error(j.message || j.error || "Something went wrong. Please try again.");
+    return cleanAI(j);
+  } catch(e) {
+    if (e && e.name === "AbortError") { const x = new Error("Stopped. Tap 🔄 Restart to run it again."); x.stopped = true; throw x; }
+    throw e;
+  } finally { inflight.delete(ctl); setWorking(); }
+}
+function loadingEl(msg, rotate, small){
+  const t = el("span", { text: msg });
+  const box = el("div", { class: "loading" + (small ? " small" : "") }, el("span", { class: "gear", "aria-hidden": "true" }, "⚙️"), t);
+  if (rotate && rotate.length) {
+    let i = 0; const iv = setInterval(() => { if (!document.body.contains(box)) return clearInterval(iv); t.textContent = rotate[i++ % rotate.length]; }, 4200);
+  }
+  return box;
+}
+function errEl(msg, retry){
+  return el("div", { class: "err" }, msg, retry ? el("div", { class: "row" }, el("button", { class: "btn blue", type: "button", onclick: retry }, "Try Again")) : null);
+}
+
+/* ---------- real photos (Wikimedia Commons and Wikipedia), credited, kept in memory for this visit only ---------- */
+const photoMem = {};
+const stripTags = s => String(s || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 70);
+async function commonsPhoto(q){
+  const u = "https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=14"
+    + "&gsrsearch=" + encodeURIComponent(q + " filetype:bitmap") + "&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=900";
+  const j = await (await fetch(u)).json();
+  const pages = Object.values((j.query && j.query.pages) || {}).sort((a, b) => (a.index || 0) - (b.index || 0));
+  for (const p of pages) {
+    const info = p.imageinfo && p.imageinfo[0]; if (!info) continue;
+    const m = info.extmetadata || {};
+    const lic = String((m.LicenseShortName && m.LicenseShortName.value) || "");
+    if (!/public domain|^pd|cc0|cc by(-sa)? ?\d/i.test(lic)) continue;
+    const title = p.title.replace(/^File:/, "").replace(/\.[a-z]+$/i, "");
+    if (PHOTO_BAD.test(title) || PHOTO_BAD.test(stripTags(m.ImageDescription && m.ImageDescription.value))) continue;
+    if (info.thumbheight && info.thumbwidth && info.thumbheight > info.thumbwidth * 1.6) continue; // skip very tall scans
+    return { src: info.thumburl || info.url, title: stripTags(title), credit: stripTags(m.Artist && m.Artist.value) || "Unknown", license: lic, source: "Wikimedia Commons", link: info.descriptionurl };
+  }
+  return null;
+}
+async function wikiPhoto(title){
+  const u = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=900&titles=" + encodeURIComponent(title);
+  const j = await (await fetch(u)).json();
+  const page = Object.values((j.query && j.query.pages) || {})[0];
+  const src = page && page.thumbnail && page.thumbnail.source;
+  if (!src || /\.svg/i.test(src)) return null;
+  return { src, title: page.title, credit: "Wikipedia", license: "", source: "Wikipedia", link: "https://en.wikipedia.org/wiki/" + encodeURIComponent(page.title.replace(/ /g, "_")) };
+}
+function findPhoto(q, fallbackTitle){
+  const key = (q || "") + "|" + (fallbackTitle || "");
+  if (photoMem[key]) return photoMem[key];
+  return (photoMem[key] = (async () => {
+    const tries = [];
+    if (q) tries.push(() => commonsPhoto(q));
+    if (fallbackTitle) tries.push(() => wikiPhoto(fallbackTitle), () => commonsPhoto(fallbackTitle));
+    for (const t of tries) { try { const p = await t(); if (p) return p; } catch(e){} }
+    return null;
+  })());
+}
+function photoBox(q, fallbackTitle, emptyText){
+  const ph = el("div", { class: "ph" }, el("span", { text: "📷 Finding a real photo..." }));
+  const cap = el("figcaption", {});
+  const fig = el("figure", { class: "photo" }, ph, cap);
+  findPhoto(q, fallbackTitle).then(p => {
+    if (!p) { ph.firstChild.textContent = emptyText || "No matching photo this time. The blueprint shows the idea."; return; }
+    const img = el("img", { src: p.src, alt: p.title, loading: "lazy", referrerpolicy: "no-referrer" });
+    img.onload = () => { img.classList.add("on"); ph.firstChild.textContent = ""; };
+    img.onerror = () => { img.remove(); ph.firstChild.textContent = emptyText || "No matching photo this time. The blueprint shows the idea."; };
+    ph.append(img);
+    cap.append(el("b", { text: "Real photo: " }), p.title + ". ", el("a", { href: p.link, target: "_blank", rel: "noopener", text: [p.credit, p.license, p.source].filter(Boolean).join(", ") }));
+  });
+  return fig;
+}
+
+function buildBanner(){
+  const b = $("#banner");
+  const fallback = (icon, cap) => el("figure", { class: "emoji" }, el("span", { "aria-hidden": "true", text: icon }), el("figcaption", { text: cap }));
+  const u = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=400&titles=" + encodeURIComponent(BANNER.join("|"));
+  const lay = photos => {
+    const pick = shuffle(photos).slice(0, 8), fb = shuffle(FALLBACK_TILES);
+    b.innerHTML = "";
+    for (let i = 0; i < 8; i++) {
+      const p = pick[i];
+      if (!p) { const x = fb.shift(); b.append(fallback(x[0], x[1])); continue; }
+      const f = el("figure", {}); const img = el("img", { src: p.src, alt: "" });
+      img.onload = () => img.classList.add("on");
+      img.onerror = () => { const x = fb.shift() || ["⚙️", "How it's made"]; f.replaceWith(fallback(x[0], x[1])); };
+      f.append(img, el("figcaption", { text: p.title })); b.append(f);
+    }
+  };
+  fetch(u).then(r => r.json()).then(j => {
+    lay(Object.values((j.query && j.query.pages) || {}).filter(pg => pg.thumbnail && !/\.svg/i.test(pg.thumbnail.source)).map(pg => ({ src: pg.thumbnail.source, title: pg.title })));
+  }).catch(() => lay([]));
+}
+
+/* ---------- read aloud (the browser's own voice) ---------- */
+const tts = { on: false, voice: null };
+function pickVoice(){
+  if (!("speechSynthesis" in window)) return null;
+  const vs = speechSynthesis.getVoices().filter(v => /^en(-|_)US/i.test(v.lang));
+  return vs.find(v => /natural|google us|samantha|aria|guy|jenny/i.test(v.name)) || vs[0] || null;
+}
+function speak(text, done){
+  if (!("speechSynthesis" in window)) { done && done(); return; }
+  speechSynthesis.cancel();
+  const parts = String(text || "").match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || [];
+  let i = 0;
+  const next = () => {
+    if (i >= parts.length) { done && done(); return; }
+    const u = new SpeechSynthesisUtterance(parts[i++].trim());
+    tts.voice = tts.voice || pickVoice(); if (tts.voice) u.voice = tts.voice;
+    u.rate = state.level === "kid" ? 0.98 : 1.03;
+    u.onend = () => { if (tts.speakingId === myId) next(); };
+    u.onerror = () => { if (tts.speakingId === myId) next(); };
+    speechSynthesis.speak(u);
+  };
+  const myId = tts.speakingId = Math.random();
+  next();
+}
+function hush(){ tts.speakingId = 0; try { speechSynthesis.cancel(); } catch(e){} }
+if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = () => { tts.voice = pickVoice(); };
+
+/* ---------- Mr. Paul's speech bubble ---------- */
+function say(text){ const b = $(".mpbub"); if (b) b.textContent = text; }
+
+/* ---------- state, navigation and the control bar ---------- */
+const state = { view: null, stack: [], dir: "forward", level: "adult", side: "home", door: null, paused: false, run: null };
+const display = $("#display");
+function setBar(left, kind){ $("#barLeft").textContent = left || "The Workbench"; $("#barRight").textContent = BAR_RIGHT[kind] || BAR_RIGHT.home; }
+function ctrlBar(){
+  const v = state.view || {};
+  const bar = el("div", { class: "ctrl noprint" });
+  if (state.stack.length) bar.append(el("button", { type: "button", onclick: goBack }, "← Back"));
+  bar.append(el("button", { type: "button", class: "stop", onclick: stopAll, title: "Stop loading, playing and reading" }, "⏹ Stop"));
+  bar.append(el("button", { type: "button", class: state.paused ? "on" : "", onclick: togglePause,
+    title: state.paused ? "Keep going" : "Hold Auto Play and reading right where they are" }, state.paused ? "▶ Resume" : "⏸ Pause"));
+  if (v.restart) bar.append(el("button", { type: "button", onclick: () => { stopAll(); v.restart(); } }, "🔄 Restart"));
+  bar.append(el("button", { type: "button", onclick: closeView }, "✖ Close"),
+    el("button", { type: "button", onclick: goHome }, "🏠 Back to Start"));
+  return bar;
+}
+function stopAll(){
+  [...inflight].forEach(c => c.abort());
+  stopPlay(); hush();
+}
+function togglePause(){
+  state.paused = !state.paused;
+  if (state.paused) { clearTimeout(play.timer); try { speechSynthesis.pause(); } catch(e){} say("Paused. Take your time looking at the blueprint. Tap Resume when you're ready."); }
+  else { try { speechSynthesis.resume(); } catch(e){} say("Back to work!"); if (play.on && !(tts.on && speechSynthesis.speaking)) schedulePlay(); }
+  repaintCtrl();
+}
+function repaintCtrl(){ const old = display.querySelector(".ctrl"); if (old) old.replaceWith(ctrlBar()); }
+function paint(view){
+  display.innerHTML = "";
+  if (!view.isHome) display.append(ctrlBar());
+  view.render(display);
+}
+function show(view, push = true){
+  if (push && state.view && !state.view.transient && !state.view.isHome) state.stack.push(state.view);
+  state.view = view;
+  paint(view);
+  if (push) scrollToEl(display.closest(".deskwrap"));
+}
+function repaint(){ if (state.view) paint(state.view); }
+function scrollToEl(node){
+  if (!node) return;
+  if (window.parent !== window) {
+    try { window.parent.postMessage({ lwToolScrollY: Math.max(0, node.getBoundingClientRect().top + window.scrollY - 10) }, "*"); } catch(e){}
+  } else node.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function goBack(){ stopAll(); const v = state.stack.pop(); if (v) { state.view = v; paint(v); } }
+function closeView(){ stopAll(); state.stack = []; state.run = null; state.view = homeView(); paint(state.view); setBar("", "home"); say("Pick anything. I'll show you how it's built, and where it all comes from!"); scrollToEl(display.closest(".deskwrap")); }
+function goHome(){
+  stopAll(); state.stack = []; state.paused = false; state.run = null;
+  $("#mainQ").value = "";
+  setSeg("dirSeg", "forward"); setSeg("levelSeg", "adult");
+  state.view = homeView(); paint(state.view); setBar("", "home");
+  say("Pick anything. I'll show you how it's built, and where it all comes from!");
+  scrollToEl($(".top"));
+}
+function setSeg(id, v){
+  document.querySelectorAll("#" + id + " button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  if (id === "dirSeg") state.dir = v;
+  if (id === "levelSeg") state.level = v;
+}
+
+/* ---------- the workshop doors ---------- */
+function drawDoors(){
+  const box = $("#doors"); box.innerHTML = "";
+  SIDES[state.side].forEach(d => box.append(el("button", { type: "button", class: "door" + (state.door === d.id ? " on" : ""), onclick: () => openDoor(d.id) },
+    el("span", { class: "ic", "aria-hidden": "true", text: d.icon }), d.name, el("small", { text: d.blurb }))));
+  const items = $("#items");
+  const d = SIDES[state.side].find(x => x.id === state.door);
+  if (!d) { items.hidden = true; return; }
+  items.hidden = false; items.innerHTML = "";
+  items.append(el("h4", { text: d.icon + " " + d.name + ": pick one" }),
+    el("div", { class: "chips" }, d.items.map(([ic, name]) => el("button", { type: "button", class: "chip", onclick: () => startRun(name, d.name) }, el("span", { "aria-hidden": "true", text: ic }), name))));
+}
+function openDoor(id){ state.door = state.door === id ? null : id; drawDoors(); }
+
+/* ---------- home ---------- */
+function homeView(){
+  return { isHome: true, render(d){
+    setBar("", "home");
+    d.append(el("div", { class: "welcome" },
+      el("h2", { text: "Everything you see had to be built" }),
+      el("p", { class: "sub", text: "A traffic light isn't one thing. It's LEDs from one factory, lenses from another, a steel pole, a controller box and an engineer's timing plan. See how it all comes together, then follow it all the way back." }),
+      el("div", { class: "steps3" },
+        el("div", {}, el("b", {}, el("span", { text: "1" }), "Pick a thing"), el("p", { text: "Type anything above, or open a door in the workshop. Choose Grown-Ups or Kids." })),
+        el("div", {}, el("b", {}, el("span", { text: "2" }), "Watch it get built"), el("p", { text: "Start with the blueprint and the real math, then click Next. The drawing grows with every step." })),
+        el("div", {}, el("b", {}, el("span", { text: "3" }), "Run it backward"), el("p", { text: "Start with the finished thing and trace every part back to the mine, the farm or the power plant." }))),
+      el("div", { class: "diff" },
+        el("div", {}, el("b", { text: "📐 It starts with a plan. " }), "Who designs it, the rules it must meet, and the math: length times width, loads, power."),
+        el("div", {}, el("b", { text: "🏭 Nothing builds itself. " }), "Every step shows which specialty factory makes each part, and what it's made of."),
+        el("div", {}, el("b", { text: "🚢 The supply chain, made simple. " }), "Backward mode follows the parts through the store, the port and the plant to the source."),
+        el("div", {}, el("b", { text: "🧒 Two levels. " }), "The same journey in grown-up detail or kid-friendly words. Ask Mr. Paul anything along the way.")),
+      el("div", { class: "tryrow" }, el("b", { text: "Try one:" }),
+        ...shuffle(["Traffic light", "Shopping cart", "Electrical outlet", "GPS satellites", "Microchip", "Dishwasher", "Skyscraper", "Cardboard box"]).slice(0, 4)
+          .map(t => el("button", { type: "button", class: "chip", onclick: () => startRun(t, "") }, t)))));
+  }};
+}
+
+/* ---------- a run: outline, then the lesson and the drawing at the same time ---------- */
+function startRun(thing, category, clarified){
+  thing = String(thing || "").trim();
+  if (!thing) { $("#mainQ").focus(); toast("Type something to build first."); return; }
+  stopAll();
+  state.stack = []; state.paused = false;
+  const run = state.run = { id: Math.random(), thing, category: category || "", clarified: clarified || "", dir: state.dir, level: state.level,
+    outline: null, a: null, b: null, art: null, errA: null, errB: null, artFailed: false, at: 0, chat: [] };
+  const v = { kind: "outline", restart: () => startRun(thing, category, clarified), render(d){
+    setBar(thing, "outline");
+    d.append(loadingEl(run.dir === "forward" ? "Rolling out the blueprint for " + thing + "..." : "Finding where " + thing + " begins its journey...",
+      ["Checking with the engineers...", "Counting the steps...", "Lining up the suppliers...", "Sharpening the pencils..."]));
+  }};
+  show(v);
+  say(run.dir === "forward" ? "Let's see how this gets built. First, the plan!" : "Let's follow it back, one hop at a time.");
+  api({ mode: "outline", thing, category: run.category, dir: run.dir, level: run.level, clarified: run.clarified })
+    .then(o => {
+      if (state.run !== run) return;
+      if (o.onTopic === false) return show(msgView(o.message), false);
+      if (o.clarify) return show(clarifyView(run, o.clarify), false);
+      if (o.ok === false) throw new Error(o.message);
+      run.outline = o;
+      loadRest(run);
+      show(lessonView(run), false);
+    })
+    .catch(e => { if (state.run === run) show(msgView(e.message, e.stopped ? null : () => startRun(thing, category, clarified)), false); });
+}
+function loadRest(run){
+  const common = { thing: run.thing, category: run.category, dir: run.dir, level: run.level, clarified: run.clarified, outline: { steps: run.outline.steps } };
+  const refresh = (range) => { if (state.run === run && state.view && state.view.kind === "lesson" && range.includes(run.at)) repaint(); };
+  const getA = () => api(Object.assign({ mode: "detail", part: "a" }, common)).then(j => { if (j.ok === false) throw new Error(j.message); run.a = j; run.errA = null; refresh([0, 1, 2, 3, 4]); })
+    .catch(e => { run.errA = e.message; refresh([0, 1, 2, 3, 4]); });
+  const getB = () => api(Object.assign({ mode: "detail", part: "b" }, common)).then(j => { if (j.ok === false) throw new Error(j.message); run.b = j; run.errB = null; refresh([5, 6, 7, 8, 9]); })
+    .catch(e => { run.errB = e.message; refresh([5, 6, 7, 8, 9]); });
+  run.retryA = getA; run.retryB = getB;
+  getA(); getB();
+  api(Object.assign({ mode: "art" }, common)).then(j => {
+    if (state.run !== run) return;
+    if (j.ok && Array.isArray(j.layers)) { run.art = j.layers; } else run.artFailed = true;
+    updateBoard(run);
+  }).catch(() => { run.artFailed = true; updateBoard(run); });
+}
+function msgView(message, retry){
+  return { kind: "msg", transient: true, render(d){
+    setBar("", "home");
+    d.append(retry ? errEl(message, retry) : el("div", { class: "note", text: message }));
+  }};
+}
+function clarifyView(run, c){
+  return { kind: "clarify", transient: true, restart: () => startRun(run.thing, run.category), render(d){
+    setBar(run.thing, "clarify");
+    say("Quick question, so I build the right one.");
+    d.append(el("div", { class: "clar" },
+      el("h3", { text: c.q }),
+      el("div", { class: "opts" }, c.options.map(o => el("button", { type: "button", onclick: () => startRun(run.thing, run.category, o) }, o))),
+      el("button", { type: "button", class: "btn ghost", onclick: () => startRun(run.thing, run.category, "Not sure: use the most common everyday one") }, "Not sure? Pick the most common one")));
+  }};
+}
+
+/* ---------- the lesson view ---------- */
+const STOP_LAST = 9; // 0 = plan (or start point), 1..8 = steps, 9 = finished (or origins)
+function stepData(run, n){ const src = n <= 4 ? run.a : run.b; return src && (src.steps || []).find(s => s.n === n) || (src && src.steps && src.steps[n - (n <= 4 ? 1 : 5)]) || null; }
+function lessonView(run){
+  return { kind: "lesson", restart: () => startRun(run.thing, run.category, run.clarified), render(d){
+    const o = run.outline, fwd = run.dir === "forward", at = run.at;
+    setBar(o.name, at === 0 ? (fwd ? "plan" : "trace") : at === STOP_LAST ? "done" : (fwd ? "step" : "trace"));
+
+    d.append(el("div", { class: "lhead" },
+      el("span", { class: "em", "aria-hidden": "true", text: o.emoji }),
+      el("div", {}, el("span", { class: "dirtag" + (fwd ? "" : " back"), text: fwd ? "▶ Start to Finish" : "◀ Finish to Start" }),
+        el("h2", { text: o.name }), o.oneLiner ? el("p", { text: o.oneLiner }) : null)));
+
+    // stage track
+    const tr = el("div", { class: "track noprint" + (fwd ? "" : " back"), role: "tablist" });
+    for (let i = 0; i <= STOP_LAST; i++) {
+      const s = o.steps[i - 1];
+      const icon = i === 0 ? (fwd ? "📐" : "📍") : i === STOP_LAST ? (fwd ? "✅" : "🌱") : s.icon;
+      const label = i === 0 ? (fwd ? "Plan" : "Here") : i === STOP_LAST ? (fwd ? "Done" : "Origin") : String(i);
+      const ready = i === 0 || i === STOP_LAST ? (i === 0 ? run.a : run.b) : stepData(run, i);
+      tr.append(el("button", { type: "button", role: "tab", class: (i === at ? "cur" : i < at ? "done" : "") + (ready ? "" : " wait"),
+        title: i === 0 ? (fwd ? "The plan" : "Where we start") : i === STOP_LAST ? (fwd ? "Finished" : "Where it all begins") : s.title,
+        onclick: () => goStep(run, i) }, el("span", { class: "i", "aria-hidden": "true", text: icon }), label));
+    }
+    d.append(tr);
+
+    // drawing + photo
+    const board = el("div", { class: "board", id: "board" });
+    d.append(el("div", { class: "stage" }, board, stagePhoto(run)));
+    drawBoard(board, run);
+
+    // the text card
+    d.append(stepCard(run));
+
+    // nav
+    const fin = at === STOP_LAST;
+    d.append(el("div", { class: "nav noprint" },
+      el("div", { class: "grp" },
+        el("button", { type: "button", class: "btn ghost", disabled: at === 0 ? "" : null, onclick: () => { stopPlay(); goStep(run, at - 1); } }, "◀ Previous"),
+        el("button", { type: "button", class: "btn", disabled: fin ? "" : null, onclick: () => { stopPlay(); goStep(run, at + 1); } }, at === 0 ? (fwd ? "Start Building ▶" : "Start Tracing ▶") : at === STOP_LAST - 1 ? (fwd ? "Finish It ▶" : "Reach the Origin ▶") : "Next ▶")),
+      el("span", { class: "count", text: at === 0 ? (fwd ? "The plan" : "The starting point") : fin ? (fwd ? "Finished!" : "The origin") : (fwd ? "Step " : "Hop ") + at + " of 8" }),
+      el("div", { class: "grp" },
+        el("button", { type: "button", class: "toggle" + (play.on ? " on" : ""), onclick: () => togglePlay(run), title: "Moves to the next step by itself" }, play.on ? "⏹ Auto Play On" : "▶ Auto Play"),
+        "speechSynthesis" in window ? el("button", { type: "button", class: "toggle" + (tts.on ? " on" : ""), onclick: () => toggleRead(run), title: "Mr. Paul reads each step out loud (your device's voice)" }, tts.on ? "🔊 Reading" : "🔈 Read to Me") : null)));
+
+    // ask Mr. Paul
+    d.append(askBar(run));
+    d.append(el("div", { class: "tools noprint" },
+      el("button", { type: "button", onclick: () => show(wholeView(run)) }, "📄 See the Whole Lesson / Print"),
+      el("button", { type: "button", onclick: () => copyText(lessonText(run)) }, "📋 Copy the Lesson")));
+  }};
+}
+function goStep(run, i){
+  if (i < 0 || i > STOP_LAST) return;
+  hush();
+  run.at = i;
+  if (state.view && state.view.kind === "lesson") repaint(); else show(lessonView(run), false);
+  const fwd = run.dir === "forward";
+  if (i === 0) say(fwd ? "Every build starts on paper. Here's the plan and the math." : "Here it is, working right in front of you. Now let's follow it back.");
+  else if (i === STOP_LAST) say(fwd ? "Finished! Want to see where all those parts came from? Run it backward." : "We made it to the start! Want to watch it get built? Run it forward.");
+  else { const s = run.outline.steps[i - 1]; say((fwd ? "Step " + i + ": " : "Hop " + i + ": ") + s.title + ". " + (s.adds || "")); }
+  const card = display.querySelector(".card"); if (card && i > 0) scrollToEl(display.querySelector(".stage"));
+  if (tts.on) readCurrent(run); else if (play.on && !state.paused) schedulePlay();
+}
+
+/* ---------- the blueprint board ---------- */
+const SVGNS = "http://www.w3.org/2000/svg";
+const OK_EL = /^(g|path|line|circle|ellipse|rect|polyline|polygon|text|tspan)$/i;
+const OK_AT = /^(x|y|x1|y1|x2|y2|cx|cy|r|rx|ry|width|height|d|points|fill|stroke|stroke-width|stroke-dasharray|stroke-linecap|stroke-linejoin|fill-opacity|stroke-opacity|opacity|font-family|font-size|font-weight|text-anchor|dominant-baseline|transform|dx|dy)$/i;
+function svgFrag(markup){
+  const doc = new DOMParser().parseFromString('<svg xmlns="' + SVGNS + '">' + markup + '</svg>', "image/svg+xml");
+  const root = doc.documentElement;
+  if (!root || root.querySelector("parsererror") || root.nodeName === "parsererror") return null;
+  const clean = node => {
+    [...node.children].forEach(c => {
+      if (!OK_EL.test(c.localName)) { c.remove(); return; }
+      [...c.attributes].forEach(a => { if (!OK_AT.test(a.name) || /url\(|javascript:/i.test(a.value)) c.removeAttribute(a.name); });
+      clean(c);
+    });
+  };
+  clean(root);
+  const g = document.createElementNS(SVGNS, "g");
+  [...root.childNodes].forEach(n => g.appendChild(document.importNode(n, true)));
+  return g;
+}
+function mk(tag, attrs, text){ const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; }
+function gridLayer(svg, run){
+  svg.append(mk("rect", { x: 0, y: 0, width: 800, height: 500, fill: "#0d2b4a" }));
+  const g = mk("g", { stroke: "#1d4a75", "stroke-width": 1 });
+  for (let x = 20; x < 800; x += 20) g.append(mk("line", { x1: x, y1: 0, x2: x, y2: 500, "stroke-opacity": x % 100 === 0 ? 0.9 : 0.45 }));
+  for (let y = 20; y < 500; y += 20) g.append(mk("line", { x1: 0, y1: y, x2: 800, y2: y, "stroke-opacity": y % 100 === 0 ? 0.9 : 0.45 }));
+  svg.append(g);
+}
+// The drawing shows instantly from the step list; the AI blueprint replaces it when it's ready.
+function quickLayers(run){
+  const steps = run.outline.steps, fwd = run.dir === "forward";
+  return steps.map((s, i) => {
+    const g = mk("g", {});
+    if (fwd) { // a tower that stacks up from the bottom, one block per step
+      const y = 436 - i * 52, w = 400 - i * 22, x = 340 - w / 2;
+      g.append(mk("rect", { x, y, width: w, height: 44, rx: 8, fill: "#7cc7ff", "fill-opacity": 0.15, stroke: "#e6f4ff", "stroke-width": 2.5 }));
+      g.append(mk("text", { x: 340, y: y + 29, "text-anchor": "middle", "font-size": 19, "font-family": "Arial", fill: "#e6f4ff" }, (i + 1) + "  " + s.icon + " " + s.title));
+    } else { // a route that snakes from the finished thing back to the origin
+      const row = i < 4 ? 0 : 1, col = row ? 3 - (i - 4) : i;
+      const cx = 110 + col * 193, cy = row ? 360 : 140;
+      if (i > 0) { const pr = (i - 1) < 4 ? 0 : 1, pc = pr ? 3 - (i - 5) : i - 1; const px = 110 + pc * 193, py = pr ? 360 : 140;
+        g.append(mk("line", { x1: px + (pr === row ? 46 : 0), y1: py + (pr === row ? 0 : 46), x2: cx - (pr === row ? 46 : 0), y2: cy - (pr === row ? 0 : 46), stroke: "#7cc7ff", "stroke-width": 3, "stroke-dasharray": "8 6" })); }
+      g.append(mk("circle", { cx, cy, r: 42, fill: "#7cc7ff", "fill-opacity": 0.15, stroke: "#e6f4ff", "stroke-width": 2.5 }));
+      g.append(mk("text", { x: cx, y: cy + 12, "text-anchor": "middle", "font-size": 34 }, s.icon));
+      g.append(mk("text", { x: cx, y: cy + 72, "text-anchor": "middle", "font-size": 16, "font-family": "Arial", fill: "#e6f4ff" }, (i + 1) + " " + s.title.slice(0, 20)));
+    }
+    return g;
+  });
+}
+function drawBoard(board, run){
+  board.innerHTML = "";
+  const svg = mk("svg", { viewBox: "0 0 800 500", role: "img", "aria-label": "Blueprint drawing of " + run.outline.name });
+  gridLayer(svg, run);
+  const fwd = run.dir === "forward", at = run.at;
+  let layers = null;
+  if (run.art) layers = run.art.map(m => (m && svgFrag(m)) || mk("g", {}));
+  else layers = quickLayers(run);
+  layers.forEach((g, i) => {
+    const n = i + 1;
+    let cls = "L ";
+    if (at === STOP_LAST) cls += "old";
+    else if (at === 0) cls += "off";
+    else cls += n < at ? "old" : n === at ? "new" : "off";
+    g.setAttribute("class", cls);
+    svg.append(g);
+  });
+  // title block, like a real engineering drawing
+  const tb = mk("g", {});
+  tb.append(mk("rect", { x: 560, y: 452, width: 228, height: 40, fill: "#0d2b4a", stroke: "#7cc7ff", "stroke-width": 1.5 }));
+  tb.append(mk("text", { x: 570, y: 469, "font-size": 11, "font-family": "Arial", fill: "#9fd3ff" }, "DRAWING: " + run.outline.name.toUpperCase().slice(0, 22)));
+  tb.append(mk("text", { x: 570, y: 485, "font-size": 11, "font-family": "Arial", fill: "#9fd3ff" },
+    (at === 0 ? (fwd ? "SHEET 0 · THE PLAN" : "START HERE") : at === STOP_LAST ? (fwd ? "COMPLETE · ALL 8 STEPS" : "FULL CHAIN · 8 HOPS") : (fwd ? "STEP " : "HOP ") + at + " OF 8")));
+  if (run.art || at !== 0) svg.append(tb);
+  if (at === 0) { // the empty sheet, waiting for the build
+    const msg = mk("g", {});
+    msg.append(mk("text", { x: 400, y: 220, "text-anchor": "middle", "font-size": 30, "font-family": "Arial", fill: "#e6f4ff" }, fwd ? "📐 " + run.outline.name : "📍 " + run.outline.name));
+    msg.append(mk("text", { x: 400, y: 262, "text-anchor": "middle", "font-size": 18, "font-family": "Arial", fill: "#9fd3ff" }, fwd ? "A blank sheet. Click Start Building to draw step 1." : "Click Start Tracing to follow it back, hop by hop."));
+    svg.append(msg);
+  }
+  board.append(svg, el("span", { class: "boardtag", text: fwd ? "Blueprint" : "Supply route" }));
+  if (!run.art && !run.artFailed) board.append(el("span", { class: "drafting", text: "Drafting the detailed blueprint..." }));
+}
+function updateBoard(run){
+  const b = document.getElementById("board");
+  if (b && state.run === run && state.view && state.view.kind === "lesson") drawBoard(b, run);
+}
+
+function stagePhoto(run){
+  const o = run.outline, at = run.at, fwd = run.dir === "forward";
+  if (at === 0) {
+    if (fwd && !run.a) return el("figure", { class: "photo" }, el("div", { class: "ph" }, el("span", { text: "📷 The photo arrives with the plan..." })));
+    return photoBox("", o.name);
+  }
+  if (at === STOP_LAST) return photoBox("", o.name);
+  const s = stepData(run, at);
+  if (!s) return el("figure", { class: "photo" }, el("div", { class: "ph" }, el("span", { text: "📷 The photo arrives with this step..." })));
+  return photoBox(s.imageQuery || (o.steps[at - 1].title + " " + o.name), "");
+}
+
+/* ---------- the text card for each stop ---------- */
+function mathBox(m){ return el("div", { class: "math" }, el("b", { text: "🧮 Do the math: " + m.label }), el("div", { class: "work", text: m.work }), m.result ? el("div", { class: "res", text: m.result }) : null); }
+function wowBox(t){ return t ? el("div", { class: "wow" }, el("span", { class: "bulb", "aria-hidden": "true", text: "💡" }), el("div", {}, el("b", { text: "Wow...Who Knew?" }), t)) : null; }
+function fact(label, value, wide){ return value ? el("div", { class: "fact" + (wide ? " wide" : "") }, el("b", { text: label }), value) : null; }
+function stepCard(run){
+  const o = run.outline, at = run.at, fwd = run.dir === "forward";
+  const card = el("div", { class: "card" + (fwd ? "" : " back") });
+  const half = at <= 4 ? "a" : "b", err = half === "a" ? run.errA : run.errB, retry = half === "a" ? run.retryA : run.retryB;
+  const waiting = (txt) => { card.append(err ? errEl(err, () => { (half === "a" ? (run.errA = null) : (run.errB = null)); retry(); repaint(); }) : loadingEl(txt, ["Asking the plant manager...", "Checking the parts list...", "Measuring twice...", "Calling the suppliers..."], true)); };
+
+  if (at === 0) {
+    if (fwd) {
+      card.append(el("div", { class: "kick", text: "Before anything is built" }), el("h3", { text: "The Blueprint: Planning " + o.name }));
+      const bp = run.a && run.a.blueprint;
+      if (!bp) { card.append(roadmap(o)); waiting("Drawing up the plan and the math..."); return card; }
+      card.append(el("p", { class: "txt", text: bp.text }));
+      if (bp.planners.length) card.append(el("div", { class: "planners" }, bp.planners.map(p => el("span", { text: "👷 " + p }))));
+      card.append(el("div", { class: "facts" },
+        bp.requirements.length ? el("div", { class: "fact wide" }, el("b", { text: "It has to..." }), el("ul", { class: "list" }, bp.requirements.map(r => el("li", { text: r })))) : null,
+        fact("Parts and pieces", bp.partsCount), fact("Suppliers involved", bp.suppliers)));
+      bp.math.forEach(m => card.append(mathBox(m)));
+      card.append(el("div", { class: "sub3", text: "The 8 build steps" }), roadmap(o));
+    } else {
+      card.append(el("div", { class: "kick", text: "The starting point" }), el("h3", { text: o.name + ": Right in Front of You" }));
+      const st = run.a && run.a.start;
+      if (!st) { card.append(roadmap(o)); waiting("Mapping the chain..."); return card; }
+      card.append(el("p", { class: "txt", text: st.text }));
+      if (st.chainLength) card.append(el("div", { class: "facts" }, fact("How far the chain stretches", st.chainLength, true)));
+      card.append(el("div", { class: "sub3", text: "The 8 hops back" }), roadmap(o));
+    }
+    return card;
+  }
+
+  if (at === STOP_LAST) {
+    const f = run.b && run.b.finish;
+    card.append(el("div", { class: "kick", text: fwd ? "All 8 steps done" : "All 8 hops traced" }), el("h3", { text: fwd ? o.name + ": Finished!" : "Where " + o.name + " Begins" }));
+    if (!f) { waiting(fwd ? "Running the final checks..." : "Reaching the source..."); return card; }
+    card.append(el("p", { class: "txt", text: f.text }));
+    if (fwd) {
+      if (f.totals) card.append(el("div", { class: "tiles" },
+        f.totals.time ? el("div", { class: "tile" }, el("b", { text: "Build time" }), el("span", { text: f.totals.time })) : null,
+        f.totals.suppliers ? el("div", { class: "tile" }, el("b", { text: "Suppliers" }), el("span", { text: f.totals.suppliers })) : null,
+        f.totals.countries ? el("div", { class: "tile" }, el("b", { text: "Countries" }), el("span", { text: f.totals.countries })) : null));
+      if (f.journey) card.append(el("div", { class: "facts" }, fact("🚚 How it gets to you", f.journey, true)));
+    } else {
+      if (f.origins.length) card.append(el("div", { class: "sub3", text: "🌍 Where the raw materials come from" }), el("div", { class: "terms" }, f.origins.map(x => el("div", {}, el("b", { text: x.what + ": " }), x.where))));
+      if (f.weakLinks.length) card.append(el("div", { class: "sub3", text: "⚠️ Where the chain can break" }), el("ul", { class: "list" }, f.weakLinks.map(w => el("li", { text: w }))));
+    }
+    if (f.terms.length) card.append(el("div", { class: "sub3", text: "📘 Words to know" }), el("div", { class: "terms" }, f.terms.map(t => el("div", {}, el("b", { text: t.word + ": " }), t.meaning))));
+    if (f.deeper.length) card.append(el("div", { class: "sub3", text: "🤔 Keep exploring (tap to ask Mr. Paul)" }), el("div", { class: "deeper" }, f.deeper.map(q => el("button", { type: "button", onclick: () => askNow(run, q) }, q))));
+    card.append(el("div", { class: "flipbox noprint" },
+      el("p", {}, el("b", { text: fwd ? "Now run it backward" : "Now run it forward" }), fwd ? "Start with the finished " + o.name.toLowerCase() + " and trace every part back to the mine, the farm or the power plant." : "Start with the blueprint and watch " + o.name.toLowerCase() + " get built, step by step."),
+      el("button", { type: "button", class: "btn", onclick: () => { setSeg("dirSeg", fwd ? "backward" : "forward"); state.level = run.level; startRun(run.thing, run.category, run.clarified); } }, fwd ? "◀ Finish to Start" : "▶ Start to Finish")));
+    return card;
+  }
+
+  const os = o.steps[at - 1], s = stepData(run, at);
+  card.append(el("div", { class: "kick", text: (fwd ? "Step " : "Hop ") + at + " of 8" + (fwd ? "" : " · going back") }), el("h3", { text: os.icon + " " + os.title }));
+  if (!s) { if (os.adds) card.append(el("p", { class: "txt", text: os.adds })); waiting(fwd ? "Building step " + at + "..." : "Tracing hop " + at + "..."); return card; }
+  card.append(el("p", { class: "txt", text: s.text }));
+  if (fwd) {
+    card.append(el("div", { class: "facts" },
+      s.added && s.added.length ? el("div", { class: "fact wide" }, el("b", { text: "➕ Added in this step" }), el("div", { class: "addchips" }, s.added.map(a => el("span", { text: a })))) : null,
+      fact("🏭 Who makes it", s.madeBy), fact("🌍 What it's made of", s.materials),
+      fact("⏱️ How long", s.time), fact("🔍 Look inside", s.inside)));
+  } else {
+    card.append(el("div", { class: "facts" },
+      fact("⚙️ The job here", s.whatHappens, true),
+      fact("⬅️ Where it gets its supply", s.whereFrom), fact("👷 Who runs it", s.whoRunsIt),
+      fact("📏 How far", s.distance), fact("🔍 Look inside", s.inside)));
+  }
+  if (s.math) card.append(mathBox(s.math));
+  const w = wowBox(s.wow); if (w) card.append(w);
+  return card;
+}
+function roadmap(o){
+  return el("ol", { class: "roadmap" }, o.steps.map(s => el("li", {}, el("span", { class: "n", text: s.n }), el("div", {}, el("b", { text: s.icon + " " + s.title }), s.adds))));
+}
+
+/* ---------- Auto Play + Read to Me ---------- */
+const play = { on: false, timer: null };
+function togglePlay(run){
+  play.on = !play.on;
+  document.body.classList.toggle("playing", play.on);
+  if (play.on) { state.paused = false; say("Auto Play is on. Sit back and watch it come together."); if (tts.on) readCurrent(run); else schedulePlay(); }
+  else { clearTimeout(play.timer); }
+  repaint();
+}
+function stopPlay(){ play.on = false; clearTimeout(play.timer); document.body.classList.remove("playing"); }
+function schedulePlay(){
+  clearTimeout(play.timer);
+  const run = state.run; if (!run || !play.on || state.paused) return;
+  if (run.at >= STOP_LAST) { stopPlay(); repaintCtrlAndNav(); return; }
+  const s = run.at === 0 ? null : stepData(run, run.at);
+  const secs = Math.max(10, Math.min(40, Math.round(words(s ? s.text : "") / 3.2) + 6));
+  play.timer = setTimeout(() => { if (play.on && !state.paused && state.run === run) goStep(run, run.at + 1); }, secs * 1000);
+}
+function repaintCtrlAndNav(){ if (state.view && state.view.kind === "lesson") repaint(); }
+function toggleRead(run){
+  tts.on = !tts.on;
+  if (tts.on) readCurrent(run); else hush();
+  repaint();
+}
+function currentText(run){
+  const o = run.outline, at = run.at, fwd = run.dir === "forward";
+  if (at === 0) { const t = fwd ? run.a && run.a.blueprint && run.a.blueprint.text : run.a && run.a.start && run.a.start.text; return t ? (fwd ? "The plan. " : "Here we are. ") + t : ""; }
+  if (at === STOP_LAST) { const f = run.b && run.b.finish; return f ? f.text + (fwd && f.journey ? " " + f.journey : "") : ""; }
+  const s = stepData(run, at); if (!s) return "";
+  return (fwd ? "Step " : "Hop ") + at + ". " + o.steps[at - 1].title + ". " + s.text + (s.wow ? " Wow, who knew? " + s.wow : "");
+}
+function readCurrent(run){
+  const t = currentText(run);
+  if (!t) { if (play.on) { clearTimeout(play.timer); play.timer = setTimeout(() => readCurrent(run), 2500); } return; }
+  speak(t, () => { if (play.on && !state.paused && state.run === run) { clearTimeout(play.timer); play.timer = setTimeout(() => { if (play.on && !state.paused && state.run === run && run.at < STOP_LAST) goStep(run, run.at + 1); else if (run.at >= STOP_LAST) stopPlay(); }, 1500); } });
+}
+
+/* ---------- ask Mr. Paul ---------- */
+function askBar(run){
+  const box = el("div", { class: "askbar noprint" });
+  const thread = el("div", { class: "thread" });
+  run.chat.forEach(m => thread.append(msgEl(m, run)));
+  const ta = el("textarea", { id: "askQ", maxlength: "500", "aria-label": "Your question for Mr. Paul" });
+  const go = el("button", { type: "button", class: "btn blue", onclick: () => askNow(run, ta.value) }, "Ask");
+  ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askNow(run, ta.value); } });
+  box.append(el("h3", { text: "🙋 Ask Mr. Paul" }), el("p", { class: "hint", text: "Curious about this step? Ask anything. For example: Why is it done in that order? What happens if this part fails?" }), thread, el("div", { class: "qbox" }, ta, go));
+  return box;
+}
+function msgEl(m, run){
+  if (m.who === "me") return el("div", { class: "msg me", text: m.text });
+  if (m.who === "wait") return el("div", { class: "msg mp" }, loadingEl("Mr. Paul is thinking...", null, true));
+  return el("div", { class: "msg mp" }, el("b", { text: "Mr. Paul" }),
+    ...String(m.text).split(/\n+/).map(p => el("p", { text: p })),
+    m.clarify ? el("div", {}, el("p", { text: m.clarify.q }), el("div", { class: "opts" }, m.clarify.options.map(op => el("button", { type: "button", onclick: () => askNow(run, op) }, op)))) : null);
+}
+function askNow(run, q){
+  q = String(q || "").trim(); if (!q) return;
+  const o = run.outline, at = run.at;
+  const where = at === 0 ? (run.dir === "forward" ? "The plan" : "The starting point") : at === STOP_LAST ? "The end of the lesson" : (run.dir === "forward" ? "Step " : "Hop ") + at + ": " + o.steps[at - 1].title;
+  const history = run.chat.filter(m => m.who !== "wait").map(m => ({ who: m.who, text: m.text }));
+  run.chat.push({ who: "me", text: q }, { who: "wait" });
+  repaint();
+  const ab = display.querySelector(".askbar"); if (ab) scrollToEl(ab);
+  api({ mode: "ask", thing: run.thing, dir: run.dir, level: run.level, clarified: run.clarified, outline: { steps: o.steps }, at: where, question: q, history })
+    .then(j => { run.chat = run.chat.filter(m => m.who !== "wait"); run.chat.push({ who: "mp", text: j.answer, clarify: j.clarify }); })
+    .catch(e => { run.chat = run.chat.filter(m => m.who !== "wait"); run.chat.push({ who: "mp", text: e.message }); })
+    .finally(() => { if (state.run === run && state.view && state.view.kind === "lesson") { repaint(); const ab2 = display.querySelector(".askbar"); if (ab2) scrollToEl(ab2); } });
+}
+
+/* ---------- the whole lesson on one page (to read, print or save as PDF) ---------- */
+function wholeView(run){
+  return { kind: "whole", render(d){
+    const o = run.outline, fwd = run.dir === "forward";
+    setBar(o.name, "whole");
+    const box = el("div", { class: "whole" });
+    box.append(el("div", { class: "lhead" }, el("span", { class: "em", text: o.emoji }), el("div", {},
+      el("span", { class: "dirtag" + (fwd ? "" : " back"), text: fwd ? "▶ Start to Finish" : "◀ Finish to Start" }), el("h2", { text: o.name }), el("p", { text: o.oneLiner || "" }))));
+    box.append(el("div", { class: "tools noprint" }, el("button", { type: "button", onclick: () => window.print() }, "🖨️ Print or Save as PDF"), el("button", { type: "button", onclick: () => copyText(lessonText(run)) }, "📋 Copy")));
+    if (!run.a || !run.b) box.append(el("div", { class: "note", text: "Some steps are still loading. Go back and come here again in a moment for the full lesson." }));
+    const board = el("div", { class: "board", style: "margin-top:12px" });
+    const keepAt = run.at; run.at = STOP_LAST; drawBoard(board, run); run.at = keepAt;
+    box.append(board);
+    const lines = lessonParts(run);
+    lines.forEach(p => {
+      const w = el("div", { class: "wstep" }, el("h4", { text: p.h }));
+      p.body.forEach(t => w.append(el("p", { text: t })));
+      box.append(w);
+    });
+    box.append(el("p", { class: "hint", text: "From Start to Finish to Start on NuSparkLearnWow.com. Written live with AI; times and counts are typical estimates." }));
+    d.append(box);
+  }};
+}
+function lessonParts(run){
+  const o = run.outline, fwd = run.dir === "forward", out = [];
+  if (fwd && run.a && run.a.blueprint) { const b = run.a.blueprint; out.push({ h: "The Blueprint", body: [b.text, b.requirements.length ? "It has to: " + b.requirements.join("; ") + "." : "", ...b.math.map(m => m.label + ": " + m.work + (m.result ? " = " + m.result : ""))].filter(Boolean) }); }
+  if (!fwd && run.a && run.a.start) out.push({ h: "The Starting Point", body: [run.a.start.text, run.a.start.chainLength ? "The chain stretches " + run.a.start.chainLength + "." : ""].filter(Boolean) });
+  for (let n = 1; n <= 8; n++) {
+    const s = stepData(run, n), t = o.steps[n - 1];
+    const body = s ? [s.text,
+      fwd ? (s.added && s.added.length ? "Added: " + s.added.join(", ") + "." : "") : (s.whatHappens || ""),
+      fwd ? (s.madeBy ? "Who makes it: " + s.madeBy : "") : (s.whereFrom ? "Where it gets its supply: " + s.whereFrom : ""),
+      fwd ? (s.materials ? "What it's made of: " + s.materials : "") : (s.whoRunsIt ? "Who runs it: " + s.whoRunsIt : ""),
+      s.math ? s.math.label + ": " + s.math.work + (s.math.result ? " = " + s.math.result : "") : "",
+      s.wow ? "Wow...Who Knew? " + s.wow : ""].filter(Boolean) : [t.adds || "(still loading)"];
+    out.push({ h: (fwd ? "Step " : "Hop ") + n + ": " + t.title, body });
+  }
+  const f = run.b && run.b.finish;
+  if (f) {
+    const body = [f.text];
+    if (fwd && f.journey) body.push("How it gets to you: " + f.journey);
+    if (!fwd) { f.origins.forEach(x => body.push(x.what + ": " + x.where)); f.weakLinks.forEach(w => body.push("Weak link: " + w)); }
+    f.terms.forEach(t => body.push(t.word + ": " + t.meaning));
+    out.push({ h: fwd ? "Finished!" : "Where It All Begins", body });
+  }
+  return out;
+}
+function lessonText(run){
+  const o = run.outline;
+  const out = [o.name + " (" + (run.dir === "forward" ? "Start to Finish" : "Finish to Start") + ")", o.oneLiner || "", ""];
+  lessonParts(run).forEach(p => { out.push(p.h.toUpperCase()); p.body.forEach(t => out.push(t)); out.push(""); });
+  out.push("From Start to Finish to Start on NuSparkLearnWow.com. Written live with AI; times and counts are typical estimates.");
+  return out.join("\n");
+}
+
+/* ---------- wire it up ---------- */
+document.querySelectorAll("#dirSeg button").forEach(b => b.addEventListener("click", () => setSeg("dirSeg", b.dataset.v)));
+document.querySelectorAll("#levelSeg button").forEach(b => b.addEventListener("click", () => setSeg("levelSeg", b.dataset.v)));
+document.querySelectorAll("#sideTabs button").forEach(b => b.addEventListener("click", () => {
+  state.side = b.dataset.v; state.door = null;
+  document.querySelectorAll("#sideTabs button").forEach(x => x.classList.toggle("on", x === b));
+  drawDoors();
+}));
+$("#mainGo").addEventListener("click", () => startRun($("#mainQ").value, ""));
+$("#mainQ").addEventListener("keydown", e => { if (e.key === "Enter") startRun($("#mainQ").value, ""); });
+buildBanner();
+drawDoors();
+state.view = homeView(); paint(state.view);
+
+/* tell the website page how tall the tool is, so there is no inner scroll bar */
+(function(){
+  if (window.parent === window) return;
+  let last = 0;
+  const send = () => {
+    const h = Math.ceil(document.body.getBoundingClientRect().height) + 20;
+    if (Math.abs(h - last) > 4) { last = h; try { window.parent.postMessage({ lwToolHeight: h }, "*"); } catch(e){} }
+  };
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+  window.addEventListener("load", send);
+  setInterval(send, 1500);
+  send();
+})();
+</script>
+</body>
+</html>
