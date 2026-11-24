@@ -174,10 +174,12 @@ main{max-width:1100px;margin:0 auto;padding:18px 14px 0}
 /* the two sides and the 8 category doors */
 .sides{margin-top:18px}
 .sidetabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-@media(max-width:700px){.sidetabs{gap:5px}.sidetabs button{font-size:15px;padding:10px 6px}.sidetabs button small{display:none}}
 .sidetabs button{border:0;border-radius:14px 14px 0 0;padding:12px 10px;font-family:Oswald,Impact,sans-serif;font-size:19px;letter-spacing:.4px;text-transform:uppercase;cursor:pointer;background:var(--steel-lt);color:var(--soft)}
 .sidetabs button.on{background:var(--steel);color:#fff}
+.sidetabs button{min-width:0;line-height:1.15}.sidetabs .tshort{display:none}
 .sidetabs button small{display:block;font-family:Nunito,sans-serif;text-transform:none;letter-spacing:0;font-size:13px;font-weight:700;opacity:.85}
+@media(max-width:700px){.sidetabs{gap:4px}.sidetabs button{font-size:14px;letter-spacing:.2px;padding:10px 4px;border-radius:12px 12px 0 0}.sidetabs button small{display:none}.sidetabs .tlong{display:none}.sidetabs .tshort{display:inline;white-space:nowrap}}
+@media(max-width:380px){.sidetabs button{font-size:13px;padding:10px 2px}}
 .doorsbox{background:var(--steel);border-radius:0 0 16px 16px;padding:12px}
 .doors{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:820px){.doors{grid-template-columns:repeat(2,1fr)}}
@@ -531,8 +533,8 @@ const SIDES = {
 
 // Kids get their own tab names, friendlier door names, and picks from a kid's world (about 6 kid picks + 2 shared per door)
 const TABS = {
-  adult: { home: ["🏠 Home Life", "Utilities, appliances, gadgets, the world outside"], industry: ["🏭 Industry & Manufacturing", "Parts, materials, machines, big systems"], tech: ["💻 Technology & Internet", "The web, apps, AI, computers and chips"] },
-  kid: { home: ["🏠 At Home", "Your house, kitchen, toys and outside"], industry: ["🏭 Factories & Machines", "How stuff gets made"], tech: ["🎮 Tech & Games", "Games, apps, robots and computers"] }
+  adult: { home: ["🏠 Home Life", "Utilities, appliances, gadgets, the world outside", "🏠 Home"], industry: ["🏭 Industry & Manufacturing", "Parts, materials, machines, big systems", "🏭 Industry"], tech: ["💻 Technology & Internet", "The web, apps, AI, computers and chips", "💻 Tech"] },
+  kid: { home: ["🏠 At Home", "Your house, kitchen, toys and outside", "🏠 Home"], industry: ["🏭 Factories & Machines", "How stuff gets made", "🏭 Factories"], tech: ["🎮 Tech & Games", "Games, apps, robots and computers", "🎮 Tech"] }
 };
 const KID = {
   power: ["Power & Water", "What comes into your house", [["🔌", "Electrical outlet"], ["🚰", "Tap water at the faucet"], ["💡", "Light bulb"], ["🛁", "Hot water for your bath"], ["🔋", "AA battery"], ["📶", "Wi-Fi at home"], ["🧊", "Freezer ice cubes"], ["☀️", "Solar-powered calculator"]]],
@@ -551,7 +553,7 @@ const KID = {
 const kidMode = () => state.level === "kid";
 function drawTabs(){
   const t = TABS[kidMode() ? "kid" : "adult"];
-  document.querySelectorAll("#sideTabs button").forEach(b => { const x = t[b.dataset.v]; b.innerHTML = ""; b.append(x[0], el("small", { text: x[1] })); b.classList.toggle("on", b.dataset.v === state.side); });
+  document.querySelectorAll("#sideTabs button").forEach(b => { const x = t[b.dataset.v]; b.innerHTML = ""; b.append(el("span", { class: "tlong", text: x[0] }), el("span", { class: "tshort", text: x[2] }), el("small", { text: x[1] })); b.classList.toggle("on", b.dataset.v === state.side); });
 }
 const moreIdeas = {}; // "door|kind" -> extra ideas Mr. Paul suggested this visit
 
