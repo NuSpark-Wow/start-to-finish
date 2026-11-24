@@ -616,6 +616,13 @@ function errEl(msg, retry){
 /* ---------- real photos (Wikimedia Commons and Wikipedia), credited, kept in memory for this visit only ---------- */
 const photoMem = {};
 const stripTags = s => String(s || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 70);
+const STOPC = new Set(["the", "and", "for", "with", "from", "photo", "picture", "image", "inside", "making", "machine", "process"]);
+function onSubjectC(q, text){
+  const w = String(q).toLowerCase().split(/[^a-z0-9]+/).filter(x => x.length >= 4 && !STOPC.has(x));
+  if (!w.length) return true;
+  const hay = String(text || "").toLowerCase();
+  return w.filter(x => hay.includes(x) || hay.includes(x.replace(/s$/, ""))).length >= Math.min(2, w.length);
+}
 async function commonsPhoto(q){
   const u = "https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=14"
     + "&gsrsearch=" + encodeURIComponent(q + " filetype:bitmap") + "&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=900";
@@ -628,6 +635,7 @@ async function commonsPhoto(q){
     if (!/public domain|^pd|cc0|cc by(-sa)? ?\d/i.test(lic)) continue;
     const title = p.title.replace(/^File:/, "").replace(/\.[a-z]+$/i, "");
     if (PHOTO_BAD.test(title) || PHOTO_BAD.test(stripTags(m.ImageDescription && m.ImageDescription.value))) continue;
+    if (!onSubjectC(q, title + " " + stripTags(m.ImageDescription && m.ImageDescription.value))) continue;
     if (info.thumbheight && info.thumbwidth && info.thumbheight > info.thumbwidth * 1.6) continue; // skip very tall scans
     return { src: info.thumburl || info.url, title: stripTags(title), credit: stripTags(m.Artist && m.Artist.value) || "Unknown", license: lic, source: "Wikimedia Commons", link: info.descriptionurl };
   }
