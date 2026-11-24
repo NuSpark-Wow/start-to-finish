@@ -210,7 +210,7 @@ THE VISITOR WANTS MORE DETAIL ON: ${label}
 What they already read: "${clip(b.base, 2400)}"
 
 TASK: write the MORE DETAIL version of this one stop, about double the length (${x.level === "kid" ? "150 to 200 simple words" : "320 to 420 words"}). Do not repeat what they already read: go deeper. Explain exactly how it is done, the real numbers, the people and machines involved, what can go wrong and how it is caught, and one short real-world example. Same accuracy and safety rules. Call the give_answer tool with this shape:
-{"text": "the deeper explanation (you may use \\n between short paragraphs)", "extra": ["exactly 3 short extra details or tips, one sentence each"]}`;
+{"text": "the deeper explanation, with a blank line between short paragraphs", "extra": ["exactly 3 short extra details or tips, one sentence each"]}`;
   }
 
   if (mode === "blend") {
@@ -254,7 +254,7 @@ ${hist ? `\nConversation so far:\n${hist}` : ""}
 THE VISITOR ASKS: "${q}"
 
 TASK: answer as Mr. Paul, ${x.level === "kid" ? "in 60 to 120 simple words" : "in 120 to 220 words"}, true and specific, tied to this lesson where it fits. If the question is truly unclear and you cannot answer well without knowing more, give your best short answer anyway and then ask ONE clarifying question. If it is off topic or unsafe, kindly steer back. Call the give_answer tool with this shape:
-{"answer": "your answer (plain sentences; you may use line breaks as \\n between short paragraphs)", "clarify": null or {"q": "one short question", "options": ["2 to 4 short choices"]}}`;
+{"answer": "your answer in plain sentences, with a blank line between short paragraphs", "clarify": null or {"q": "one short question", "options": ["2 to 4 short choices"]}}`;
   }
   return null;
 }
@@ -330,7 +330,7 @@ module.exports = async (req, res) => {
 
     if (mode === "more") {
       const j = answerOf(await anthropic(p, MODEL, 8000, true)) || {};
-      const text = clip(j.text, 4000);
+      const text = paras(j.text, 4000);
       if (!text) return res.status(200).json({ ok: false, message: "More detail didn't come through. Tap Try Again." });
       return res.status(200).json({ ok: true, text, extra: clipList(j.extra, 3, 300) });
     }
@@ -346,7 +346,7 @@ module.exports = async (req, res) => {
     if (mode === "ask") {
       const j = answerOf(await anthropic(p, MODEL, 5000, true)) || {};
       const c = j.clarify && typeof j.clarify === "object" ? { q: clip(j.clarify.q, 160), options: clipList(j.clarify.options, 4, 60) } : null;
-      return res.status(200).json({ ok: true, answer: clip(j.answer, 2400) || "Hmm, let me think about that one. Try asking it a different way.", clarify: c && c.q && c.options.length >= 2 ? c : null });
+      return res.status(200).json({ ok: true, answer: paras(j.answer, 2400) || "Hmm, let me think about that one. Try asking it a different way.", clarify: c && c.q && c.options.length >= 2 ? c : null });
     }
   } catch (e) {
     console.error(e);
@@ -408,6 +408,7 @@ function extractJson(text) {
 }
 const cleanText = s => String(s == null ? "" : s).replace(/<\/?cite\b[^>]*>/gi, "").replace(/\*\*/g, "").replace(/[ \t]{2,}/g, " ").trim();
 const clip = (s, n) => cleanText(s).slice(0, n);
+const paras = (s, n) => clip(String(s == null ? "" : s).replace(/\\n/g, "\n"), n);   // turns a typed "\n" into a real line break
 const clipList = (a, n, len) => (Array.isArray(a) ? a : []).slice(0, n).map(x => clip(x, len)).filter(Boolean);
 
 // Answers come back through a tool call, so the JSON is always complete and valid.

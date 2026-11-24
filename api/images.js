@@ -1,4 +1,4 @@
-// Start to Finish to Start — photo finder for each step (Vercel)
+// Start to Finish to Start — photo finder for each step (Vercel). Not counted as a LearnWow try; the website lock keeps it on Paul's sites.
 // 1) Google Images through Serper (needs SERPER_API_KEY in Vercel). Each web photo first gets a quick AI look:
 //    family-safe, really shows the step, not a watermarked stock image or a page of text.
 // 2) If Serper isn't set up or finds nothing good: Wikimedia Commons (public domain or free with credit).
@@ -54,6 +54,14 @@ async function fromWeb(q) {
   return { src: it.imageUrl, title: strip(it.title), credit: site || "the web", license: "", source: "From the web", link: it.link || "" };
 }
 
+// a free-archive photo must mention the subject (keeps out off-target matches)
+const STOP = new Set(["the", "and", "for", "with", "from", "photo", "picture", "image", "inside", "making", "machine", "process"]);
+function onSubject(q, text) {
+  const words = q.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 4 && !STOP.has(w));
+  if (!words.length) return true;
+  const hay = String(text || "").toLowerCase();
+  return words.filter(w => hay.includes(w) || hay.includes(w.replace(/s$/, ""))).length >= Math.min(2, words.length);
+}
 async function fromCommons(q) {
   const url = "https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=15"
     + "&gsrsearch=" + encodeURIComponent(q + " filetype:bitmap") + "&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=900";
@@ -67,6 +75,7 @@ async function fromCommons(q) {
     if ((info.width || 0) < 450) continue;
     const title = p.title.replace(/^File:/, "").replace(/\.[a-z]+$/i, "").replace(/_/g, " ");
     if (BAD.test(title) || BAD.test(m.ImageDescription?.value || "")) continue;
+    if (!onSubject(q, title + " " + strip(m.ImageDescription?.value))) continue;
     return { src: info.thumburl || info.url, title: strip(title), credit: strip(m.Artist?.value) || "Unknown", license: lic, source: "Wikimedia Commons", link: info.descriptionurl };
   }
   return null;
@@ -74,7 +83,6 @@ async function fromCommons(q) {
 
 module.exports = async (req, res) => {
   if (!allowedRequest(req)) return blockRequest(res);
-  if (!(await require("./_lwgate")(req, res, "start-to-finish"))) return;
   const q = String(req.query.q || "").replace(/[^\w\s'-]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
   if (!q || BAD.test(q)) return res.json({ image: null });
   for (const fn of [fromWeb, fromCommons]) {
