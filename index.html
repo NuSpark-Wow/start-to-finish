@@ -153,7 +153,16 @@ main{max-width:1100px;margin:0 auto;padding:18px 14px 0}
 .btn[disabled]{opacity:.45;pointer-events:none}
 .hint{font-size:14.5px;color:var(--soft);margin:7px 2px 0;font-weight:700}
 @media(max-width:560px){.sbar{flex-direction:column}.btn{width:100%}}
-.toggles{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:16px}
+.toggles{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:14px;margin-top:16px}
+@media(max-width:1000px){.toggles{grid-template-columns:1fr 1fr}.toggles .tog:first-child{grid-column:1/-1}}
+.kindtog{margin-bottom:16px}
+.seg.big2 button{font-size:20px;padding:14px 12px;border-width:4px}
+.seg.big2 button small{font-size:13.5px}
+.seg.big2 button.on{background:var(--orange);border-color:var(--orange-dk)}
+.seg.big2 button.on small{color:#fff3e8}
+.morebtn{margin-top:10px;border:2px dashed var(--orange);background:var(--orange-lt);color:var(--orange-dk);font-weight:900;font-size:15px;padding:9px 16px;border-radius:12px;cursor:pointer;width:100%}
+.morebtn[disabled]{opacity:.6;pointer-events:none}
+.chip.new{border-color:#ffc79c}
 @media(max-width:760px){.toggles{grid-template-columns:1fr}}
 .tog b{display:block;font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soft);margin-bottom:6px}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
@@ -343,6 +352,36 @@ body:not(.working):not(.playing) .ctrl button.stop{opacity:.4;pointer-events:non
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .tools button{border:2px solid #cfd6dd;background:#fff;border-radius:30px;padding:7px 14px;font-weight:800;font-size:14px;cursor:pointer}
 
+/* per-step tools: More Detail + Got a Question? */
+.steptools{margin-top:14px;border-top:2px dashed #e2e6ea;padding-top:12px}
+.strow{display:flex;gap:8px;flex-wrap:wrap}
+.sbtn{border:2px solid var(--steel);background:#fff;color:var(--steel);font-weight:900;font-size:15px;padding:8px 14px;border-radius:30px;cursor:pointer}
+.sbtn.on{background:var(--steel);color:#fff}
+.morebox{background:#f4f8fc;border:2px solid var(--bp-line);border-radius:14px;padding:12px 16px;margin-bottom:10px}
+.morebox b.h{display:block;font-family:Oswald,Impact,sans-serif;text-transform:uppercase;color:var(--bp);font-size:17px;letter-spacing:.3px;margin-bottom:4px}
+.morebox p{margin:6px 0;font-size:16.5px}
+.morebox ul{margin:6px 0 0;padding-left:20px}
+.stepq{margin-top:10px;background:var(--orange-lt);border:2px solid #ffd2ad;border-radius:14px;padding:12px}
+.stepq .qbox textarea{min-height:52px}
+.stepq .lbl{font-weight:900;color:var(--orange-dk);font-size:14px;margin-bottom:6px}
+/* the usual ending */
+.ending{margin-top:18px;border-top:4px solid var(--orange);padding-top:14px}
+.ending h3{font-family:Oswald,Impact,sans-serif;text-transform:uppercase;color:var(--steel);font-size:24px;margin:0 0 8px}
+.endrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.persp{background:#eef7f1;border:2px solid #9fd1b2;border-radius:16px;padding:14px 16px;margin:10px 0}
+.persp h4{font-family:Oswald,Impact,sans-serif;text-transform:uppercase;color:#1f6b42;font-size:20px;margin:0 0 4px}
+.persp p,.persp li{font-size:15.5px}
+.persp ol{margin:6px 0 10px;padding-left:22px}
+.persp li{margin:4px 0}
+.persp label{display:block;font-weight:900;margin:8px 0 6px}
+.persp textarea{width:100%;min-height:140px;font-size:15.5px;padding:10px 12px;border:2px solid #c9d8cf;border-radius:12px;resize:vertical}
+.persp .er{color:var(--red);font-weight:800;font-size:14px;margin-top:6px}
+.navbottom{margin-top:16px;background:var(--steel-lt);border-radius:14px;padding:10px;display:flex;gap:8px;flex-wrap:wrap}
+.navbottom button{border:0;background:#fff;color:var(--ink);font-weight:800;font-size:14px;padding:7px 14px;border-radius:30px;cursor:pointer}
+.badge{display:inline-block;background:var(--green);color:#fff;font-weight:900;border-radius:20px;padding:4px 12px;font-size:14px;margin-bottom:8px}
+.updates{background:var(--green-lt);border:2px solid #9fd1b2;border-radius:12px;padding:10px 14px;margin:10px 0}
+.updates b{color:#1f6b42}
+
 /* print: the whole lesson */
 .whole .wstep{border-top:2px solid #e2e6ea;padding-top:10px;margin-top:12px;break-inside:avoid}
 .whole h4{font-family:Oswald,Impact,sans-serif;text-transform:uppercase;font-size:20px;margin:0 0 4px;color:var(--steel)}
@@ -362,7 +401,7 @@ footer p{margin:6px 0}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--steel-dk);color:#fff;font-weight:800;padding:10px 18px;border-radius:30px;z-index:99;box-shadow:0 8px 20px rgba(0,0,0,.3)}
 
 @media print{
-  .top,.banner,.pick,.mphost,footer,.ctrl,.nav,.askbar,.noprint,.tools,.track{display:none !important}
+  .top,.banner,.pick,.mphost,footer,.ctrl,.nav,.askbar,.noprint,.tools,.track,.steptools .strow,.stepq,.ending,.navbottom{display:none !important}
   body{background:#fff}.deskwrap{background:none;box-shadow:none;padding:0}.bar{display:none}.display{padding:0}
   .card,.wstep,.board,.photo{break-inside:avoid}
 }
@@ -380,17 +419,29 @@ footer p{margin:6px 0}
 
 <main>
   <section class="pick" aria-label="Pick something to build">
-    <label class="big" for="mainQ">What do you want to see built?</label>
+    <div class="tog kindtog"><b>Pick your starting point</b>
+      <div class="seg big2" id="kindSeg">
+        <button type="button" data-v="build" class="on">🔨 Build<small>The actual build, from prep to finished</small></button>
+        <button type="button" data-v="plan">📋 The Build Plan<small>Strategy, sourcing, testing, pricing, logistics</small></button>
+      </div>
+    </div>
+    <label class="big" for="mainQ" id="mainLabel">What do you want to see built?</label>
     <div class="sbar">
       <input type="text" id="mainQ" maxlength="120" autocomplete="off">
       <button class="btn" type="button" id="mainGo">Start Building</button>
     </div>
-    <p class="hint">Type anything: a traffic light, a shopping cart, GPS, a pencil, an outlet. Or pick from the workshop below.</p>
+    <p class="hint" id="mainHint">Type anything: a traffic light, a shopping cart, a pencil, a microchip. Or pick from the workshop below.</p>
     <div class="toggles">
       <div class="tog"><b>Which way?</b>
         <div class="seg" id="dirSeg">
-          <button type="button" data-v="forward" class="on">▶ Start to Finish<small>Plan it, then build it step by step</small></button>
+          <button type="button" data-v="forward" class="on">▶ Start to Finish<small>Prep it, then build it step by step</small></button>
           <button type="button" data-v="backward">◀ Finish to Start<small>Trace it back to where it all comes from</small></button>
+        </div>
+      </div>
+      <div class="tog"><b>How many steps?</b>
+        <div class="seg" id="stepsSeg">
+          <button type="button" data-v="8" class="on">🔑 Key 8<small>The big milestones</small></button>
+          <button type="button" data-v="12">🔍 Detailed 12<small>Every finer step</small></button>
         </div>
       </div>
       <div class="tog"><b>Explain it for</b>
@@ -461,6 +512,8 @@ const SIDES = {
       ["💧", "Water treatment plant"], ["🚢", "Cargo port"], ["🛰️", "GPS satellites"], ["🧳", "Airport baggage system"]] }
   ]
 };
+
+const moreIdeas = {}; // "door|kind" -> extra ideas Mr. Paul suggested this visit
 
 // Banner: 8 real photos (4 on phones), picked at random each visit, with drawn tiles if a photo won't load
 const BANNER = ["Traffic light", "Assembly line", "Container ship", "Integrated circuit", "Electrical substation", "Industrial robot",
@@ -626,7 +679,9 @@ if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = () => { tts.v
 function say(text){ const b = $(".mpbub"); if (b) b.textContent = text; }
 
 /* ---------- state, navigation and the control bar ---------- */
-const state = { view: null, stack: [], dir: "forward", level: "adult", side: "home", door: null, paused: false, run: null };
+const state = { view: null, stack: [], kind: "build", steps: 8, dir: "forward", level: "adult", side: "home", door: null, paused: false, run: null };
+let STOP_LAST = 9;   // 0 = the plan (or starting point), 1..n = the steps, n+1 = finished (or the origin)
+const unit = run => (run.dir === "backward" && run.kind === "build" ? "Hop " : "Step ");
 const display = $("#display");
 function setBar(left, kind){ $("#barLeft").textContent = left || "The Workbench"; $("#barRight").textContent = BAR_RIGHT[kind] || BAR_RIGHT.home; }
 function ctrlBar(){
@@ -675,7 +730,7 @@ function closeView(){ stopAll(); state.stack = []; state.run = null; state.view 
 function goHome(){
   stopAll(); state.stack = []; state.paused = false; state.run = null;
   $("#mainQ").value = "";
-  setSeg("dirSeg", "forward"); setSeg("levelSeg", "adult");
+  setSeg("kindSeg", "build"); setSeg("dirSeg", "forward"); setSeg("levelSeg", "adult"); setSeg("stepsSeg", "8");
   state.view = homeView(); paint(state.view); setBar("", "home");
   say("Pick anything. I'll show you how it's built, and where it all comes from!");
   scrollToEl($(".top"));
@@ -684,6 +739,17 @@ function setSeg(id, v){
   document.querySelectorAll("#" + id + " button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
   if (id === "dirSeg") state.dir = v;
   if (id === "levelSeg") state.level = v;
+  if (id === "stepsSeg") state.steps = parseInt(v, 10) === 12 ? 12 : 8;
+  if (id === "kindSeg") {
+    state.kind = v === "plan" ? "plan" : "build";
+    const proc = state.kind === "plan";
+    $("#mainLabel").textContent = proc ? "What do you want to see planned?" : "What do you want to see built?";
+    $("#mainHint").textContent = proc ? "Type anything: a traffic light, a shopping cart, a pencil, a microchip. See the strategy, sourcing, testing, pricing and logistics behind it." : "Type anything: a traffic light, a shopping cart, a pencil, a microchip. Or pick from the workshop below.";
+    $("#mainGo").textContent = proc ? "Start the Plan" : "Start Building";
+    document.querySelectorAll("#dirSeg button small")[0].textContent = proc ? "From the first idea to the store shelf" : "Prep it, then build it step by step";
+    document.querySelectorAll("#dirSeg button small")[1].textContent = proc ? "Start at the price tag and trace back every decision" : "Trace it back to where it all comes from";
+    drawDoors();
+  }
 }
 
 /* ---------- the workshop doors ---------- */
@@ -695,8 +761,18 @@ function drawDoors(){
   const d = SIDES[state.side].find(x => x.id === state.door);
   if (!d) { items.hidden = true; return; }
   items.hidden = false; items.innerHTML = "";
-  items.append(el("h4", { text: d.icon + " " + d.name + ": pick one" }),
-    el("div", { class: "chips" }, d.items.map(([ic, name]) => el("button", { type: "button", class: "chip", onclick: () => startRun(name, d.name) }, el("span", { "aria-hidden": "true", text: ic }), name))));
+  const proc = state.kind === "plan";
+  const base = d.items, key = d.id + "|" + state.kind, extra = moreIdeas[key] || [];
+  const chip = (ic, name, isNew) => el("button", { type: "button", class: "chip" + (isNew ? " new" : ""), onclick: () => startRun(name, d.name) }, el("span", { "aria-hidden": "true", text: ic }), name);
+  const more = el("button", { type: "button", class: "morebtn" }, "✨ Give Me 8 More Ideas");
+  more.onclick = () => {
+    more.disabled = true; more.textContent = "✨ Mr. Paul is thinking of 8 more...";
+    api({ mode: "ideas", kind: state.kind, side: state.side, category: d.name, exclude: base.concat(extra).map(x => x[1]) })
+      .then(j => { if (!j.ideas || !j.ideas.length) throw new Error("No new ideas this time. Try again."); moreIdeas[key] = extra.concat(j.ideas.map(x => [x.icon, x.name])); drawDoors(); })
+      .catch(e => { more.disabled = false; more.textContent = "✨ Give Me 8 More Ideas"; toast(e.message); });
+  };
+  items.append(el("h4", { text: d.icon + " " + d.name + (proc ? ": pick one to plan" : ": pick one to build") }),
+    el("div", { class: "chips" }, base.map(([ic, name]) => chip(ic, name)), extra.map(([ic, name]) => chip(ic, name, true))), more);
 }
 function openDoor(id){ state.door = state.door === id ? null : id; drawDoors(); }
 
@@ -714,7 +790,7 @@ function homeView(){
       el("div", { class: "diff" },
         el("div", {}, el("b", { text: "📐 It starts with a plan. " }), "Who designs it, the rules it must meet, and the math: length times width, loads, power."),
         el("div", {}, el("b", { text: "🏭 Nothing builds itself. " }), "Every step shows which specialty factory makes each part, and what it's made of."),
-        el("div", {}, el("b", { text: "🚢 The supply chain, made simple. " }), "Backward mode follows the parts through the store, the port and the plant to the source."),
+        el("div", {}, el("b", { text: "📋 The Build Plan. " }), "Everything but the build: strategy, sourcing, testing, optimizing, pricing and logistics."),
         el("div", {}, el("b", { text: "🧒 Two levels. " }), "The same journey in grown-up detail or kid-friendly words. Ask Mr. Paul anything along the way.")),
       el("div", { class: "tryrow" }, el("b", { text: "Try one:" }),
         ...shuffle(["Traffic light", "Shopping cart", "Electrical outlet", "GPS satellites", "Microchip", "Dishwasher", "Skyscraper", "Cardboard box"]).slice(0, 4)
@@ -728,16 +804,17 @@ function startRun(thing, category, clarified){
   if (!thing) { $("#mainQ").focus(); toast("Type something to build first."); return; }
   stopAll();
   state.stack = []; state.paused = false;
-  const run = state.run = { id: Math.random(), thing, category: category || "", clarified: clarified || "", dir: state.dir, level: state.level,
-    outline: null, a: null, b: null, art: null, errA: null, errB: null, artFailed: false, at: 0, chat: [] };
+  const run = state.run = { id: Math.random(), thing, category: category || "", clarified: clarified || "", dir: state.dir, level: state.level, kind: state.kind, n: state.steps,
+    outline: null, a: null, b: null, art: null, errA: null, errB: null, artFailed: false, at: 0, chat: [], more: {}, stepChat: {}, openQ: {} };
+  STOP_LAST = run.n + 1;
   const v = { kind: "outline", restart: () => startRun(thing, category, clarified), render(d){
     setBar(thing, "outline");
-    d.append(loadingEl(run.dir === "forward" ? "Rolling out the blueprint for " + thing + "..." : "Finding where " + thing + " begins its journey...",
+    d.append(loadingEl(run.kind === "plan" ? (run.dir === "forward" ? "Opening the business plan for " + thing + "..." : "Reading the price tag on " + thing + "...") : run.dir === "forward" ? "Rolling out the blueprint for " + thing + "..." : "Finding where " + thing + " begins its journey...",
       ["Checking with the engineers...", "Counting the steps...", "Lining up the suppliers...", "Sharpening the pencils..."]));
   }};
   show(v);
   say(run.dir === "forward" ? "Let's see how this gets built. First, the plan!" : "Let's follow it back, one hop at a time.");
-  api({ mode: "outline", thing, category: run.category, dir: run.dir, level: run.level, clarified: run.clarified })
+  api({ mode: "outline", thing, category: run.category, dir: run.dir, level: run.level, kind: run.kind, steps: run.n, clarified: run.clarified })
     .then(o => {
       if (state.run !== run) return;
       if (o.onTopic === false) return show(msgView(o.message), false);
@@ -750,12 +827,13 @@ function startRun(thing, category, clarified){
     .catch(e => { if (state.run === run) show(msgView(e.message, e.stopped ? null : () => startRun(thing, category, clarified)), false); });
 }
 function loadRest(run){
-  const common = { thing: run.thing, category: run.category, dir: run.dir, level: run.level, clarified: run.clarified, outline: { steps: run.outline.steps } };
+  const common = { thing: run.thing, category: run.category, dir: run.dir, level: run.level, kind: run.kind, steps: run.n, clarified: run.clarified, outline: { steps: run.outline.steps } };
+  const h = run.n / 2, aRange = Array.from({ length: h + 1 }, (_, i) => i), bRange = Array.from({ length: h + 1 }, (_, i) => h + 1 + i);
   const refresh = (range) => { if (state.run === run && state.view && state.view.kind === "lesson" && range.includes(run.at)) repaint(); };
-  const getA = () => api(Object.assign({ mode: "detail", part: "a" }, common)).then(j => { if (j.ok === false) throw new Error(j.message); run.a = j; run.errA = null; refresh([0, 1, 2, 3, 4]); })
-    .catch(e => { run.errA = e.message; refresh([0, 1, 2, 3, 4]); });
-  const getB = () => api(Object.assign({ mode: "detail", part: "b" }, common)).then(j => { if (j.ok === false) throw new Error(j.message); run.b = j; run.errB = null; refresh([5, 6, 7, 8, 9]); })
-    .catch(e => { run.errB = e.message; refresh([5, 6, 7, 8, 9]); });
+  const getA = () => api(Object.assign({ mode: "detail", part: "a" }, common)).then(j => { if (j.ok === false) throw new Error(j.message); run.a = j; run.errA = null; refresh(aRange); })
+    .catch(e => { run.errA = e.message; refresh(aRange); });
+  const getB = () => api(Object.assign({ mode: "detail", part: "b" }, common)).then(j => { if (j.ok === false) throw new Error(j.message); run.b = j; run.errB = null; refresh(bRange); })
+    .catch(e => { run.errB = e.message; refresh(bRange); });
   run.retryA = getA; run.retryB = getB;
   getA(); getB();
   api(Object.assign({ mode: "art" }, common)).then(j => {
@@ -782,16 +860,16 @@ function clarifyView(run, c){
 }
 
 /* ---------- the lesson view ---------- */
-const STOP_LAST = 9; // 0 = plan (or start point), 1..8 = steps, 9 = finished (or origins)
-function stepData(run, n){ const src = n <= 4 ? run.a : run.b; return src && (src.steps || []).find(s => s.n === n) || (src && src.steps && src.steps[n - (n <= 4 ? 1 : 5)]) || null; }
+function stepData(run, n){ const h = run.n / 2, src = n <= h ? run.a : run.b; return src && (src.steps || []).find(s => s.n === n) || (src && src.steps && src.steps[n - (n <= h ? 1 : h + 1)]) || null; }
 function lessonView(run){
   return { kind: "lesson", restart: () => startRun(run.thing, run.category, run.clarified), render(d){
-    const o = run.outline, fwd = run.dir === "forward", at = run.at;
-    setBar(o.name, at === 0 ? (fwd ? "plan" : "trace") : at === STOP_LAST ? "done" : (fwd ? "step" : "trace"));
+    const o = run.outline, fwd = run.dir === "forward", at = run.at, proc = run.kind === "plan";
+    STOP_LAST = run.n + 1;
+    setBar(o.name, at === 0 ? (fwd ? "plan" : "trace") : at === STOP_LAST ? "done" : (fwd ? (proc ? "outline" : "step") : "trace"));
 
     d.append(el("div", { class: "lhead" },
       el("span", { class: "em", "aria-hidden": "true", text: o.emoji }),
-      el("div", {}, el("span", { class: "dirtag" + (fwd ? "" : " back"), text: fwd ? "▶ Start to Finish" : "◀ Finish to Start" }),
+      el("div", {}, el("span", { class: "dirtag" + (fwd ? "" : " back"), text: (proc ? "📋 Build Plan · " : "🔨 Build · ") + (fwd ? "▶ Start to Finish" : "◀ Finish to Start") + " · " + run.n + " steps" }),
         el("h2", { text: o.name }), o.oneLiner ? el("p", { text: o.oneLiner }) : null)));
 
     // stage track
@@ -799,10 +877,10 @@ function lessonView(run){
     for (let i = 0; i <= STOP_LAST; i++) {
       const s = o.steps[i - 1];
       const icon = i === 0 ? (fwd ? "📐" : "📍") : i === STOP_LAST ? (fwd ? "✅" : "🌱") : s.icon;
-      const label = i === 0 ? (fwd ? "Plan" : "Here") : i === STOP_LAST ? (fwd ? "Done" : "Origin") : String(i);
+      const label = i === 0 ? (fwd ? (proc ? "Idea" : "Prep") : "Here") : i === STOP_LAST ? (fwd ? (proc ? "Shelf" : "Done") : (proc ? "Idea" : "Origin")) : String(i);
       const ready = i === 0 || i === STOP_LAST ? (i === 0 ? run.a : run.b) : stepData(run, i);
       tr.append(el("button", { type: "button", role: "tab", class: (i === at ? "cur" : i < at ? "done" : "") + (ready ? "" : " wait"),
-        title: i === 0 ? (fwd ? "The plan" : "Where we start") : i === STOP_LAST ? (fwd ? "Finished" : "Where it all begins") : s.title,
+        title: i === 0 ? (fwd ? (proc ? "The big idea" : "The prep") : "Where we start") : i === STOP_LAST ? (fwd ? "Finished" : "Where it all begins") : s.title,
         onclick: () => goStep(run, i) }, el("span", { class: "i", "aria-hidden": "true", text: icon }), label));
     }
     d.append(tr);
@@ -820,8 +898,8 @@ function lessonView(run){
     d.append(el("div", { class: "nav noprint" },
       el("div", { class: "grp" },
         el("button", { type: "button", class: "btn ghost", disabled: at === 0 ? "" : null, onclick: () => { stopPlay(); goStep(run, at - 1); } }, "◀ Previous"),
-        el("button", { type: "button", class: "btn", disabled: fin ? "" : null, onclick: () => { stopPlay(); goStep(run, at + 1); } }, at === 0 ? (fwd ? "Start Building ▶" : "Start Tracing ▶") : at === STOP_LAST - 1 ? (fwd ? "Finish It ▶" : "Reach the Origin ▶") : "Next ▶")),
-      el("span", { class: "count", text: at === 0 ? (fwd ? "The plan" : "The starting point") : fin ? (fwd ? "Finished!" : "The origin") : (fwd ? "Step " : "Hop ") + at + " of 8" }),
+        el("button", { type: "button", class: "btn", disabled: fin ? "" : null, onclick: () => { stopPlay(); goStep(run, at + 1); } }, at === 0 ? (fwd ? (proc ? "Start the Plan ▶" : "Start Building ▶") : "Start Tracing ▶") : at === STOP_LAST - 1 ? (fwd ? (proc ? "Put It on the Shelf ▶" : "Finish It ▶") : (proc ? "Reach the First Idea ▶" : "Reach the Origin ▶")) : "Next ▶")),
+      el("span", { class: "count", text: at === 0 ? (fwd ? (proc ? "The big idea" : "The prep") : "The starting point") : fin ? (fwd ? (proc ? "On the shelf!" : "Finished!") : (proc ? "The first idea" : "The origin")) : unit(run) + at + " of " + run.n }),
       el("div", { class: "grp" },
         el("button", { type: "button", class: "toggle" + (play.on ? " on" : ""), onclick: () => togglePlay(run), title: "Moves to the next step by itself" }, play.on ? "⏹ Auto Play On" : "▶ Auto Play"),
         "speechSynthesis" in window ? el("button", { type: "button", class: "toggle" + (tts.on ? " on" : ""), onclick: () => toggleRead(run), title: "Mr. Paul reads each step out loud (your device's voice)" }, tts.on ? "🔊 Reading" : "🔈 Read to Me") : null)));
@@ -834,14 +912,16 @@ function lessonView(run){
   }};
 }
 function goStep(run, i){
+  STOP_LAST = run.n + 1;
   if (i < 0 || i > STOP_LAST) return;
   hush();
   run.at = i;
   if (state.view && state.view.kind === "lesson") repaint(); else show(lessonView(run), false);
   const fwd = run.dir === "forward";
-  if (i === 0) say(fwd ? "Every build starts on paper. Here's the plan and the math." : "Here it is, working right in front of you. Now let's follow it back.");
-  else if (i === STOP_LAST) say(fwd ? "Finished! Want to see where all those parts came from? Run it backward." : "We made it to the start! Want to watch it get built? Run it forward.");
-  else { const s = run.outline.steps[i - 1]; say((fwd ? "Step " + i + ": " : "Hop " + i + ": ") + s.title + ". " + (s.adds || "")); }
+  const pl = run.kind === "plan";
+  if (i === 0) say(pl ? (fwd ? "Before anyone builds anything, somebody has to decide it's worth making." : "Look at that price tag. Every number on it is a decision. Let's trace them back.") : fwd ? "Every build starts on paper. Here's the prep and the math." : "Here it is, working right in front of you. Now let's follow it back.");
+  else if (i === STOP_LAST) say(pl ? (fwd ? "On the shelf! Now flip it: start at the price tag and trace it back." : "Back to the first idea! Want to watch the plan come together? Run it forward.") : fwd ? "Finished! Want to see where all those parts came from? Run it backward." : "We made it to the start! Want to watch it get built? Run it forward.");
+  else { const s = run.outline.steps[i - 1]; say(unit(run) + i + ": " + s.title + ". " + (s.adds || "")); }
   const card = display.querySelector(".card"); if (card && i > 0) scrollToEl(display.querySelector(".stage"));
   if (tts.on) readCurrent(run); else if (play.on && !state.paused) schedulePlay();
 }
@@ -876,21 +956,22 @@ function gridLayer(svg, run){
 }
 // The drawing shows instantly from the step list; the AI blueprint replaces it when it's ready.
 function quickLayers(run){
-  const steps = run.outline.steps, fwd = run.dir === "forward";
+  const steps = run.outline.steps, n = steps.length, fwd = run.dir === "forward", tower = fwd && run.kind === "build";
+  const rows = n / 4, ys = rows === 3 ? [95, 245, 395] : [140, 360], rad = rows === 3 ? 32 : 42;
+  const pos = i => { const r = Math.floor(i / 4), c = r % 2 ? 3 - (i % 4) : i % 4; return [110 + c * 193, ys[r]]; };
   return steps.map((s, i) => {
     const g = mk("g", {});
-    if (fwd) { // a tower that stacks up from the bottom, one block per step
-      const y = 436 - i * 52, w = 400 - i * 22, x = 340 - w / 2;
-      g.append(mk("rect", { x, y, width: w, height: 44, rx: 8, fill: "#7cc7ff", "fill-opacity": 0.15, stroke: "#e6f4ff", "stroke-width": 2.5 }));
-      g.append(mk("text", { x: 340, y: y + 29, "text-anchor": "middle", "font-size": 19, "font-family": "Arial", fill: "#e6f4ff" }, (i + 1) + "  " + s.icon + " " + s.title));
-    } else { // a route that snakes from the finished thing back to the origin
-      const row = i < 4 ? 0 : 1, col = row ? 3 - (i - 4) : i;
-      const cx = 110 + col * 193, cy = row ? 360 : 140;
-      if (i > 0) { const pr = (i - 1) < 4 ? 0 : 1, pc = pr ? 3 - (i - 5) : i - 1; const px = 110 + pc * 193, py = pr ? 360 : 140;
-        g.append(mk("line", { x1: px + (pr === row ? 46 : 0), y1: py + (pr === row ? 0 : 46), x2: cx - (pr === row ? 46 : 0), y2: cy - (pr === row ? 0 : 46), stroke: "#7cc7ff", "stroke-width": 3, "stroke-dasharray": "8 6" })); }
-      g.append(mk("circle", { cx, cy, r: 42, fill: "#7cc7ff", "fill-opacity": 0.15, stroke: "#e6f4ff", "stroke-width": 2.5 }));
-      g.append(mk("text", { x: cx, y: cy + 12, "text-anchor": "middle", "font-size": 34 }, s.icon));
-      g.append(mk("text", { x: cx, y: cy + 72, "text-anchor": "middle", "font-size": 16, "font-family": "Arial", fill: "#e6f4ff" }, (i + 1) + " " + s.title.slice(0, 20)));
+    if (tower) { // a tower that stacks up from the bottom, one block per step
+      const pitch = n === 12 ? 36 : 52, hgt = pitch - 8, y = 488 - pitch * (i + 1), w = 400 - i * (n === 12 ? 14 : 22), x = 340 - w / 2;
+      g.append(mk("rect", { x, y, width: w, height: hgt, rx: 8, fill: "#7cc7ff", "fill-opacity": 0.15, stroke: "#e6f4ff", "stroke-width": 2.5 }));
+      g.append(mk("text", { x: 340, y: y + hgt / 2 + (n === 12 ? 6 : 7), "text-anchor": "middle", "font-size": n === 12 ? 16 : 19, "font-family": "Arial", fill: "#e6f4ff" }, (i + 1) + "  " + s.icon + " " + s.title));
+    } else { // a route that snakes from step 1 to the last step
+      const [cx, cy] = pos(i);
+      if (i > 0) { const [px, py] = pos(i - 1), same = py === cy;
+        g.append(mk("line", { x1: px + (same ? Math.sign(cx - px) * (rad + 4) : 0), y1: py + (same ? 0 : rad + 26), x2: cx - (same ? Math.sign(cx - px) * (rad + 4) : 0), y2: cy - (same ? 0 : rad + 4), stroke: "#7cc7ff", "stroke-width": 3, "stroke-dasharray": "8 6" })); }
+      g.append(mk("circle", { cx, cy, r: rad, fill: "#7cc7ff", "fill-opacity": 0.15, stroke: "#e6f4ff", "stroke-width": 2.5 }));
+      g.append(mk("text", { x: cx, y: cy + (rows === 3 ? 10 : 12), "text-anchor": "middle", "font-size": rows === 3 ? 26 : 34 }, s.icon));
+      g.append(mk("text", { x: cx, y: cy + rad + (rows === 3 ? 20 : 28), "text-anchor": "middle", "font-size": rows === 3 ? 14 : 16, "font-family": "Arial", fill: "#e6f4ff" }, (i + 1) + " " + s.title.slice(0, 20)));
     }
     return g;
   });
@@ -917,15 +998,15 @@ function drawBoard(board, run){
   tb.append(mk("rect", { x: 560, y: 452, width: 228, height: 40, fill: "#0d2b4a", stroke: "#7cc7ff", "stroke-width": 1.5 }));
   tb.append(mk("text", { x: 570, y: 469, "font-size": 11, "font-family": "Arial", fill: "#9fd3ff" }, "DRAWING: " + run.outline.name.toUpperCase().slice(0, 22)));
   tb.append(mk("text", { x: 570, y: 485, "font-size": 11, "font-family": "Arial", fill: "#9fd3ff" },
-    (at === 0 ? (fwd ? "SHEET 0 · THE PLAN" : "START HERE") : at === STOP_LAST ? (fwd ? "COMPLETE · ALL 8 STEPS" : "FULL CHAIN · 8 HOPS") : (fwd ? "STEP " : "HOP ") + at + " OF 8")));
+    (at === 0 ? (fwd ? "SHEET 0 · " + (run.kind === "plan" ? "THE BIG IDEA" : "THE PREP") : "START HERE") : at === STOP_LAST ? (fwd ? "COMPLETE · ALL " + run.n + " STEPS" : "FULL CHAIN · " + run.n + " " + unit(run).trim().toUpperCase() + "S") : unit(run).toUpperCase() + at + " OF " + run.n)));
   if (run.art || at !== 0) svg.append(tb);
   if (at === 0) { // the empty sheet, waiting for the build
     const msg = mk("g", {});
     msg.append(mk("text", { x: 400, y: 220, "text-anchor": "middle", "font-size": 30, "font-family": "Arial", fill: "#e6f4ff" }, fwd ? "📐 " + run.outline.name : "📍 " + run.outline.name));
-    msg.append(mk("text", { x: 400, y: 262, "text-anchor": "middle", "font-size": 18, "font-family": "Arial", fill: "#9fd3ff" }, fwd ? "A blank sheet. Click Start Building to draw step 1." : "Click Start Tracing to follow it back, hop by hop."));
+    msg.append(mk("text", { x: 400, y: 262, "text-anchor": "middle", "font-size": 18, "font-family": "Arial", fill: "#9fd3ff" }, fwd ? (run.kind === "plan" ? "A blank sheet. Click Start the Plan to map step 1." : "A blank sheet. Click Start Building to draw step 1.") : "Click Start Tracing to follow it back, step by step."));
     svg.append(msg);
   }
-  board.append(svg, el("span", { class: "boardtag", text: fwd ? "Blueprint" : "Supply route" }));
+  board.append(svg, el("span", { class: "boardtag", text: run.kind === "plan" ? "Plan map" : fwd ? "Blueprint" : "Supply route" }));
   if (!run.art && !run.artFailed) board.append(el("span", { class: "drafting", text: "Drafting the detailed blueprint..." }));
 }
 function updateBoard(run){
@@ -952,74 +1033,210 @@ function fact(label, value, wide){ return value ? el("div", { class: "fact" + (w
 function stepCard(run){
   const o = run.outline, at = run.at, fwd = run.dir === "forward";
   const card = el("div", { class: "card" + (fwd ? "" : " back") });
-  const half = at <= 4 ? "a" : "b", err = half === "a" ? run.errA : run.errB, retry = half === "a" ? run.retryA : run.retryB;
+  const proc = run.kind === "plan";
+  const half = at <= run.n / 2 ? "a" : "b", err = half === "a" ? run.errA : run.errB, retry = half === "a" ? run.retryA : run.retryB;
   const waiting = (txt) => { card.append(err ? errEl(err, () => { (half === "a" ? (run.errA = null) : (run.errB = null)); retry(); repaint(); }) : loadingEl(txt, ["Asking the plant manager...", "Checking the parts list...", "Measuring twice...", "Calling the suppliers..."], true)); };
 
   if (at === 0) {
     if (fwd) {
-      card.append(el("div", { class: "kick", text: "Before anything is built" }), el("h3", { text: "The Blueprint: Planning " + o.name }));
+      card.append(el("div", { class: "kick", text: proc ? "Before anyone spends a dollar" : "Before anything is built" }), el("h3", { text: proc ? "The Big Idea: Why Make " + o.name + "?" : "The Blueprint: Prepping " + o.name }));
       const bp = run.a && run.a.blueprint;
-      if (!bp) { card.append(roadmap(o)); waiting("Drawing up the plan and the math..."); return card; }
+      if (!bp) { card.append(roadmap(o)); waiting(proc ? "Working out the opportunity and the numbers..." : "Drawing up the plan and the math..."); return card; }
       card.append(el("p", { class: "txt", text: bp.text }));
       if (bp.planners.length) card.append(el("div", { class: "planners" }, bp.planners.map(p => el("span", { text: "👷 " + p }))));
       card.append(el("div", { class: "facts" },
         bp.requirements.length ? el("div", { class: "fact wide" }, el("b", { text: "It has to..." }), el("ul", { class: "list" }, bp.requirements.map(r => el("li", { text: r })))) : null,
-        fact("Parts and pieces", bp.partsCount), fact("Suppliers involved", bp.suppliers)));
+        fact(proc ? "Teams involved" : "Parts and pieces", bp.partsCount), fact("Suppliers involved", bp.suppliers)));
       bp.math.forEach(m => card.append(mathBox(m)));
-      card.append(el("div", { class: "sub3", text: "The 8 build steps" }), roadmap(o));
+      card.append(stepTools(run, 0, bp.text));
+      card.append(el("div", { class: "sub3", text: "The " + run.n + (proc ? " steps of the plan" : " build steps") }), roadmap(o));
     } else {
       card.append(el("div", { class: "kick", text: "The starting point" }), el("h3", { text: o.name + ": Right in Front of You" }));
       const st = run.a && run.a.start;
-      if (!st) { card.append(roadmap(o)); waiting("Mapping the chain..."); return card; }
+      if (!st) { card.append(roadmap(o)); waiting(proc ? "Tracing the decisions..." : "Mapping the chain..."); return card; }
       card.append(el("p", { class: "txt", text: st.text }));
-      if (st.chainLength) card.append(el("div", { class: "facts" }, fact("How far the chain stretches", st.chainLength, true)));
-      card.append(el("div", { class: "sub3", text: "The 8 hops back" }), roadmap(o));
+      if (st.chainLength) card.append(el("div", { class: "facts" }, fact(proc ? "From first idea to the shelf" : "How far the chain stretches", st.chainLength, true)));
+      card.append(stepTools(run, 0, st.text));
+      card.append(el("div", { class: "sub3", text: "The " + run.n + (proc ? " steps back" : " hops back") }), roadmap(o));
     }
     return card;
   }
 
   if (at === STOP_LAST) {
     const f = run.b && run.b.finish;
-    card.append(el("div", { class: "kick", text: fwd ? "All 8 steps done" : "All 8 hops traced" }), el("h3", { text: fwd ? o.name + ": Finished!" : "Where " + o.name + " Begins" }));
+    card.append(el("div", { class: "kick", text: fwd ? "All " + run.n + " steps done" : "All " + run.n + " " + unit(run).trim().toLowerCase() + "s traced" }), el("h3", { text: fwd ? o.name + (proc ? ": On the Shelf" : ": Finished!") : (proc ? o.name + ": Where the Idea Began" : "Where " + o.name + " Begins") }));
     if (!f) { waiting(fwd ? "Running the final checks..." : "Reaching the source..."); return card; }
     card.append(el("p", { class: "txt", text: f.text }));
     if (fwd) {
       if (f.totals) card.append(el("div", { class: "tiles" },
-        f.totals.time ? el("div", { class: "tile" }, el("b", { text: "Build time" }), el("span", { text: f.totals.time })) : null,
+        f.totals.time ? el("div", { class: "tile" }, el("b", { text: proc ? "Idea to shelf" : "Build time" }), el("span", { text: f.totals.time })) : null,
         f.totals.suppliers ? el("div", { class: "tile" }, el("b", { text: "Suppliers" }), el("span", { text: f.totals.suppliers })) : null,
         f.totals.countries ? el("div", { class: "tile" }, el("b", { text: "Countries" }), el("span", { text: f.totals.countries })) : null));
-      if (f.journey) card.append(el("div", { class: "facts" }, fact("🚚 How it gets to you", f.journey, true)));
+      if (f.journey) card.append(el("div", { class: "facts" }, fact(proc ? "🏷️ On sale" : "🚚 How it gets to you", f.journey, true)));
     } else {
-      if (f.origins.length) card.append(el("div", { class: "sub3", text: "🌍 Where the raw materials come from" }), el("div", { class: "terms" }, f.origins.map(x => el("div", {}, el("b", { text: x.what + ": " }), x.where))));
-      if (f.weakLinks.length) card.append(el("div", { class: "sub3", text: "⚠️ Where the chain can break" }), el("ul", { class: "list" }, f.weakLinks.map(w => el("li", { text: w }))));
+      if (f.origins.length) card.append(el("div", { class: "sub3", text: proc ? "🧭 The big decisions behind it" : "🌍 Where the raw materials come from" }), el("div", { class: "terms" }, f.origins.map(x => el("div", {}, el("b", { text: x.what + ": " }), x.where))));
+      if (f.weakLinks.length) card.append(el("div", { class: "sub3", text: proc ? "⚠️ Where the plan can go wrong" : "⚠️ Where the chain can break" }), el("ul", { class: "list" }, f.weakLinks.map(w => el("li", { text: w }))));
     }
     if (f.terms.length) card.append(el("div", { class: "sub3", text: "📘 Words to know" }), el("div", { class: "terms" }, f.terms.map(t => el("div", {}, el("b", { text: t.word + ": " }), t.meaning))));
     if (f.deeper.length) card.append(el("div", { class: "sub3", text: "🤔 Keep exploring (tap to ask Mr. Paul)" }), el("div", { class: "deeper" }, f.deeper.map(q => el("button", { type: "button", onclick: () => askNow(run, q) }, q))));
     card.append(el("div", { class: "flipbox noprint" },
-      el("p", {}, el("b", { text: fwd ? "Now run it backward" : "Now run it forward" }), fwd ? "Start with the finished " + o.name.toLowerCase() + " and trace every part back to the mine, the farm or the power plant." : "Start with the blueprint and watch " + o.name.toLowerCase() + " get built, step by step."),
-      el("button", { type: "button", class: "btn", onclick: () => { setSeg("dirSeg", fwd ? "backward" : "forward"); state.level = run.level; startRun(run.thing, run.category, run.clarified); } }, fwd ? "◀ Finish to Start" : "▶ Start to Finish")));
+      el("p", {}, el("b", { text: fwd ? "Now run it backward" : "Now run it forward" }), proc ? (fwd ? "Start with the price tag and trace every decision back to the first idea." : "Start with the first idea and follow every decision to the store shelf.") : fwd ? "Start with the finished " + o.name.toLowerCase() + " and trace every part back to the mine, the farm or the power plant." : "Start with the blueprint and watch " + o.name.toLowerCase() + " get built, step by step."),
+      el("button", { type: "button", class: "btn", onclick: () => { setSeg("dirSeg", fwd ? "backward" : "forward"); state.level = run.level; state.kind = run.kind; state.steps = run.n; startRun(run.thing, run.category, run.clarified); } }, fwd ? "◀ Finish to Start" : "▶ Start to Finish")));
+    card.append(usualEnding(run));
     return card;
   }
 
   const os = o.steps[at - 1], s = stepData(run, at);
-  card.append(el("div", { class: "kick", text: (fwd ? "Step " : "Hop ") + at + " of 8" + (fwd ? "" : " · going back") }), el("h3", { text: os.icon + " " + os.title }));
-  if (!s) { if (os.adds) card.append(el("p", { class: "txt", text: os.adds })); waiting(fwd ? "Building step " + at + "..." : "Tracing hop " + at + "..."); return card; }
+  card.append(el("div", { class: "kick", text: unit(run) + at + " of " + run.n + (fwd ? "" : " · going back") }), el("h3", { text: os.icon + " " + os.title }));
+  if (!s) { if (os.adds) card.append(el("p", { class: "txt", text: os.adds })); waiting(fwd ? (proc ? "Planning step " : "Building step ") + at + "..." : "Tracing " + unit(run).toLowerCase() + at + "..."); return card; }
   card.append(el("p", { class: "txt", text: s.text }));
   if (fwd) {
     card.append(el("div", { class: "facts" },
-      s.added && s.added.length ? el("div", { class: "fact wide" }, el("b", { text: "➕ Added in this step" }), el("div", { class: "addchips" }, s.added.map(a => el("span", { text: a })))) : null,
-      fact("🏭 Who makes it", s.madeBy), fact("🌍 What it's made of", s.materials),
-      fact("⏱️ How long", s.time), fact("🔍 Look inside", s.inside)));
+      s.added && s.added.length ? el("div", { class: "fact wide" }, el("b", { text: proc ? "✅ Decisions made here" : "➕ Added in this step" }), el("div", { class: "addchips" }, s.added.map(a => el("span", { text: a })))) : null,
+      fact(proc ? "👔 Who handles it" : "🏭 Who makes it", s.madeBy), fact(proc ? "💵 The money side" : "🌍 What it's made of", s.materials),
+      fact("⏱️ How long", s.time), fact(proc ? "🔍 Behind the scenes" : "🔍 Look inside", s.inside)));
   } else {
     card.append(el("div", { class: "facts" },
       fact("⚙️ The job here", s.whatHappens, true),
-      fact("⬅️ Where it gets its supply", s.whereFrom), fact("👷 Who runs it", s.whoRunsIt),
-      fact("📏 How far", s.distance), fact("🔍 Look inside", s.inside)));
+      fact(proc ? "⬅️ The decision before this" : "⬅️ Where it gets its supply", s.whereFrom), fact(proc ? "👔 Who decides" : "👷 Who runs it", s.whoRunsIt),
+      fact(proc ? "⏱️ How long before launch" : "📏 How far", s.distance), fact(proc ? "🔍 Behind the scenes" : "🔍 Look inside", s.inside)));
   }
   if (s.math) card.append(mathBox(s.math));
   const w = wowBox(s.wow); if (w) card.append(w);
+  card.append(stepTools(run, at, s.text));
   return card;
 }
+/* ---------- every stop: More Detail (double length) + Got a Question? ---------- */
+function stopLabel(run, at){
+  const fwd = run.dir === "forward";
+  if (at === 0) return fwd ? (run.kind === "plan" ? "The Big Idea" : "The Prep") : "The starting point";
+  return unit(run) + at + ": " + run.outline.steps[at - 1].title;
+}
+function stepTools(run, at, baseText){
+  const box = el("div", { class: "steptools" });
+  const m = run.more[at];
+  if (m && m.text) {
+    box.append(el("div", { class: "morebox" }, el("b", { class: "h", text: "📄 More Detail" }),
+      ...m.text.split(/\n+/).map(t => el("p", { text: t })),
+      m.extra && m.extra.length ? el("ul", {}, m.extra.map(x => el("li", { text: x }))) : null));
+  } else if (m === "loading") box.append(loadingEl("Mr. Paul is digging deeper...", ["Pulling the spec sheets...", "Asking the crew chief...", "Checking the numbers..."], true));
+  else if (m && m.err) box.append(errEl(m.err, () => getMore(run, at, baseText)));
+  const qOpen = run.openQ[at] || (run.stepChat[at] && run.stepChat[at].length);
+  box.append(el("div", { class: "strow noprint" },
+    !m || m.err ? el("button", { type: "button", class: "sbtn", onclick: () => getMore(run, at, baseText) }, "📄 More Detail") : null,
+    el("button", { type: "button", class: "sbtn" + (qOpen ? " on" : ""), onclick: () => { run.openQ[at] = !run.openQ[at]; repaint(); if (run.openQ[at]) setTimeout(() => { const t = document.getElementById("stepQ"); if (t) t.focus({ preventScroll: true }); }, 50); } }, "🙋 Got a Question?")));
+  if (qOpen) {
+    const chat = run.stepChat[at] = run.stepChat[at] || [];
+    const thread = el("div", { class: "thread" }, chat.map(x => msgEl(x, run, q => askStep(run, at, q))));
+    const ta = el("textarea", { id: "stepQ", maxlength: "500", "aria-label": "Your question about this step" });
+    ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askStep(run, at, ta.value); } });
+    box.append(el("div", { class: "stepq noprint" }, el("div", { class: "lbl", text: "Ask Mr. Paul about " + stopLabel(run, at) }),
+      el("p", { class: "hint", style: "margin:0 0 6px", text: "For example: Why is it done this way? What would happen if we skipped it?" }),
+      thread, el("div", { class: "qbox" }, ta, el("button", { type: "button", class: "btn blue", onclick: () => askStep(run, at, ta.value) }, "Ask"))));
+  }
+  return box;
+}
+function getMore(run, at, baseText){
+  run.more[at] = "loading"; repaint();
+  api({ mode: "more", thing: run.thing, dir: run.dir, level: run.level, kind: run.kind, steps: run.n, clarified: run.clarified, outline: { steps: run.outline.steps }, at, base: baseText || "" })
+    .then(j => { if (j.ok === false) throw new Error(j.message); run.more[at] = { text: j.text, extra: j.extra || [] }; })
+    .catch(e => { run.more[at] = { err: e.message }; })
+    .finally(() => { if (state.run === run && run.at === at && state.view && state.view.kind === "lesson") repaint(); });
+}
+function askStep(run, at, q){
+  q = String(q || "").trim(); if (!q) return;
+  const chat = run.stepChat[at] = run.stepChat[at] || [];
+  const history = chat.filter(m => m.who !== "wait").map(m => ({ who: m.who, text: m.text }));
+  chat.push({ who: "me", text: q }, { who: "wait" });
+  run.openQ[at] = true; repaint();
+  api({ mode: "ask", thing: run.thing, dir: run.dir, level: run.level, kind: run.kind, steps: run.n, clarified: run.clarified, outline: { steps: run.outline.steps }, at: stopLabel(run, at), question: q, history })
+    .then(j => { run.stepChat[at] = run.stepChat[at].filter(m => m.who !== "wait"); run.stepChat[at].push({ who: "mp", text: j.answer, clarify: j.clarify }); })
+    .catch(e => { run.stepChat[at] = run.stepChat[at].filter(m => m.who !== "wait"); run.stepChat[at].push({ who: "mp", text: e.message }); })
+    .finally(() => { if (state.run === run && run.at === at && state.view && state.view.kind === "lesson") repaint(); });
+}
+
+/* ---------- the usual ending: print, copy, a fresh start, and another AI's perspective ---------- */
+function aiText(run){ return "Review, double-check, and add relevant images.\n\n" + lessonText(run); }
+function usualEnding(run){
+  const box = el("div", { class: "ending noprint" });
+  box.append(el("h3", { text: "Take It Further" }),
+    el("div", { class: "endrow" },
+      el("button", { type: "button", class: "btn ghost", onclick: () => { show(wholeView(run)); setTimeout(() => window.print(), 400); } }, "🖨️ Print / Save as PDF"),
+      el("button", { type: "button", class: "btn ghost", onclick: () => copyText(lessonText(run)) }, "📋 Copy the Lesson"),
+      el("button", { type: "button", class: "btn ghost", onclick: () => show(wholeView(run)) }, "📄 See the Whole Lesson"),
+      el("button", { type: "button", class: "btn ghost", onclick: goHome }, "🆕 New Lesson")));
+  // Gain Another Perspective
+  const p = el("div", { class: "persp" });
+  const er = el("div", { class: "er" });
+  const ta = el("textarea", { id: "perspText", maxlength: "20000" });
+  const copyBtn = el("button", { type: "button", class: "btn blue" }, "📋 Copy Our Lesson for AI");
+  copyBtn.onclick = () => { copyText(aiText(run)); copyBtn.textContent = "✓ Copied! Paste it into any AI"; setTimeout(() => { copyBtn.textContent = "📋 Copy Our Lesson for AI"; }, 2600); };
+  const pasteBtn = el("button", { type: "button", class: "btn ghost" }, "📥 Paste");
+  pasteBtn.onclick = () => {
+    if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(t => { if (t && t.trim()) { ta.value = t; er.textContent = ""; } else er.textContent = "Nothing to paste yet. Copy the other AI's response first."; }, () => { ta.focus(); er.textContent = "Tap inside the box and paste (press and hold, then Paste)."; });
+    else { ta.focus(); er.textContent = "Tap inside the box and paste (press and hold, then Paste)."; }
+  };
+  const blendBtn = el("button", { type: "button", class: "btn" }, "🔀 Blend Into One Report");
+  blendBtn.onclick = () => {
+    const t = ta.value.trim();
+    if (t.length < 40) { er.textContent = "Please paste the other AI's response first."; ta.focus(); return; }
+    blendNow(run, t);
+  };
+  p.append(el("h4", { text: "🤝 Gain Another Perspective" }),
+    el("p", { text: "Every AI has its own strengths. Bring in another one, and Mr. Paul will blend the best of both into one complete report." }),
+    el("ol", {},
+      el("li", {}, el("b", { text: "Copy our lesson: " }), "tap Copy Our Lesson for AI."),
+      el("li", {}, el("b", { text: "Paste it into another AI: " }), "open ChatGPT, Gemini or any AI tool you like, paste it and send it."),
+      el("li", {}, el("b", { text: "Copy its response: " }), "use that AI's copy button, or select all of its response and copy."),
+      el("li", {}, el("b", { text: "Paste it here: " }), "tap Paste, or tap inside the box and paste (on a phone, press and hold, then Paste)."),
+      el("li", {}, "Tap ", el("b", { text: "Blend Into One Report" }), ".")),
+    el("div", { class: "endrow" }, copyBtn),
+    el("label", { for: "perspText", text: "Paste the other AI's response here" }), ta,
+    el("div", { class: "endrow", style: "margin-top:10px;margin-bottom:0" }, pasteBtn, blendBtn), er);
+  box.append(p);
+  box.append(el("div", { class: "navbottom" },
+    el("button", { type: "button", onclick: () => scrollToEl(display.closest(".deskwrap")) }, "⬆ Top of the Lesson"),
+    el("button", { type: "button", onclick: () => { stopAll(); startRun(run.thing, run.category, run.clarified); } }, "🔄 Restart"),
+    el("button", { type: "button", onclick: closeView }, "✖ Close"),
+    el("button", { type: "button", onclick: goHome }, "🏠 Back to Start")));
+  return box;
+}
+function blendNow(run, review){
+  const v = { kind: "blend", render(d){
+    setBar(run.outline.name, "whole");
+    if (run.blend && run.blend.ok) return blendReport(d, run);
+    if (run.blend && run.blend.err) return d.append(errEl(run.blend.err, () => blendNow(run, review)));
+    d.append(loadingEl("Mr. Paul is blending both into one report... about a minute", ["Comparing notes...", "Keeping what's well established...", "Writing the final report..."]));
+  }};
+  run.blend = null;
+  show(v);
+  api({ mode: "blend", thing: run.thing, dir: run.dir, level: run.level, kind: run.kind, steps: run.n, clarified: run.clarified, outline: { steps: run.outline.steps }, lesson: lessonText(run), review })
+    .then(j => { if (j.ok === false) throw new Error(j.message); run.blend = Object.assign({ ok: true }, j); })
+    .catch(e => { run.blend = { err: e.message }; })
+    .finally(() => { if (state.view === v) repaint(); });
+}
+function blendText(run){
+  const b = run.blend, out = [b.title || run.outline.name, "[Double-checked by Claude and another AI]", "", b.summary || "", ""];
+  b.sections.forEach(x => { out.push((x.heading || "").toUpperCase()); out.push(x.text); out.push(""); });
+  if (b.updates && b.updates.length) { out.push("WHAT WE UPDATED"); b.updates.forEach(u => out.push("- " + u)); out.push(""); }
+  out.push("From Start to Finish to Start on NuSparkLearnWow.com. AI can make mistakes, so double-check anything important.");
+  return out.join("\n");
+}
+function blendReport(d, run){
+  const b = run.blend;
+  const box = el("div", { class: "whole" });
+  box.append(el("span", { class: "badge", text: "✓ Double-checked by Claude and another AI" }),
+    el("div", { class: "lhead" }, el("span", { class: "em", text: run.outline.emoji }), el("div", {}, el("h2", { text: b.title || run.outline.name }), b.summary ? el("p", { text: b.summary }) : null)));
+  box.append(el("div", { class: "updates" }, el("b", { text: "What we updated: " }), b.updates && b.updates.length ? el("ul", { class: "list" }, b.updates.map(u => el("li", { text: u }))) : "Both checks agreed. No changes were needed."));
+  b.sections.forEach(x => { const w = el("div", { class: "wstep" }, el("h4", { text: x.heading })); x.text.split(/\n+/).forEach(t => w.append(el("p", { text: t }))); box.append(w); });
+  box.append(el("div", { class: "endrow noprint", style: "margin-top:14px" },
+    el("button", { type: "button", class: "btn ghost", onclick: () => window.print() }, "🖨️ Print / Save as PDF"),
+    el("button", { type: "button", class: "btn ghost", onclick: () => copyText(blendText(run)) }, "📋 Copy the Report"),
+    el("button", { type: "button", class: "btn ghost", onclick: () => { run.at = STOP_LAST; show(lessonView(run)); } }, "↩ Back to the Lesson"),
+    el("button", { type: "button", class: "btn ghost", onclick: goHome }, "🆕 New Lesson")));
+  d.append(box);
+}
+
 function roadmap(o){
   return el("ol", { class: "roadmap" }, o.steps.map(s => el("li", {}, el("span", { class: "n", text: s.n }), el("div", {}, el("b", { text: s.icon + " " + s.title }), s.adds))));
 }
@@ -1038,6 +1255,7 @@ function schedulePlay(){
   clearTimeout(play.timer);
   const run = state.run; if (!run || !play.on || state.paused) return;
   if (run.at >= STOP_LAST) { stopPlay(); repaintCtrlAndNav(); return; }
+  STOP_LAST = run.n + 1;
   const s = run.at === 0 ? null : stepData(run, run.at);
   const secs = Math.max(10, Math.min(40, Math.round(words(s ? s.text : "") / 3.2) + 6));
   play.timer = setTimeout(() => { if (play.on && !state.paused && state.run === run) goStep(run, run.at + 1); }, secs * 1000);
@@ -1053,7 +1271,7 @@ function currentText(run){
   if (at === 0) { const t = fwd ? run.a && run.a.blueprint && run.a.blueprint.text : run.a && run.a.start && run.a.start.text; return t ? (fwd ? "The plan. " : "Here we are. ") + t : ""; }
   if (at === STOP_LAST) { const f = run.b && run.b.finish; return f ? f.text + (fwd && f.journey ? " " + f.journey : "") : ""; }
   const s = stepData(run, at); if (!s) return "";
-  return (fwd ? "Step " : "Hop ") + at + ". " + o.steps[at - 1].title + ". " + s.text + (s.wow ? " Wow, who knew? " + s.wow : "");
+  return unit(run) + at + ". " + o.steps[at - 1].title + ". " + s.text + (s.wow ? " Wow, who knew? " + s.wow : "");
 }
 function readCurrent(run){
   const t = currentText(run);
@@ -1072,22 +1290,22 @@ function askBar(run){
   box.append(el("h3", { text: "🙋 Ask Mr. Paul" }), el("p", { class: "hint", text: "Curious about this step? Ask anything. For example: Why is it done in that order? What happens if this part fails?" }), thread, el("div", { class: "qbox" }, ta, go));
   return box;
 }
-function msgEl(m, run){
+function msgEl(m, run, onAsk){
   if (m.who === "me") return el("div", { class: "msg me", text: m.text });
   if (m.who === "wait") return el("div", { class: "msg mp" }, loadingEl("Mr. Paul is thinking...", null, true));
   return el("div", { class: "msg mp" }, el("b", { text: "Mr. Paul" }),
     ...String(m.text).split(/\n+/).map(p => el("p", { text: p })),
-    m.clarify ? el("div", {}, el("p", { text: m.clarify.q }), el("div", { class: "opts" }, m.clarify.options.map(op => el("button", { type: "button", onclick: () => askNow(run, op) }, op)))) : null);
+    m.clarify ? el("div", {}, el("p", { text: m.clarify.q }), el("div", { class: "opts" }, m.clarify.options.map(op => el("button", { type: "button", onclick: () => (onAsk || (q => askNow(run, q)))(op) }, op)))) : null);
 }
 function askNow(run, q){
   q = String(q || "").trim(); if (!q) return;
   const o = run.outline, at = run.at;
-  const where = at === 0 ? (run.dir === "forward" ? "The plan" : "The starting point") : at === STOP_LAST ? "The end of the lesson" : (run.dir === "forward" ? "Step " : "Hop ") + at + ": " + o.steps[at - 1].title;
+  const where = at === 0 ? (run.dir === "forward" ? "The plan" : "The starting point") : at === STOP_LAST ? "The end of the lesson" : unit(run) + at + ": " + o.steps[at - 1].title;
   const history = run.chat.filter(m => m.who !== "wait").map(m => ({ who: m.who, text: m.text }));
   run.chat.push({ who: "me", text: q }, { who: "wait" });
   repaint();
   const ab = display.querySelector(".askbar"); if (ab) scrollToEl(ab);
-  api({ mode: "ask", thing: run.thing, dir: run.dir, level: run.level, clarified: run.clarified, outline: { steps: o.steps }, at: where, question: q, history })
+  api({ mode: "ask", thing: run.thing, dir: run.dir, level: run.level, kind: run.kind, steps: run.n, clarified: run.clarified, outline: { steps: o.steps }, at: where, question: q, history })
     .then(j => { run.chat = run.chat.filter(m => m.who !== "wait"); run.chat.push({ who: "mp", text: j.answer, clarify: j.clarify }); })
     .catch(e => { run.chat = run.chat.filter(m => m.who !== "wait"); run.chat.push({ who: "mp", text: e.message }); })
     .finally(() => { if (state.run === run && state.view && state.view.kind === "lesson") { repaint(); const ab2 = display.querySelector(".askbar"); if (ab2) scrollToEl(ab2); } });
@@ -1096,6 +1314,7 @@ function askNow(run, q){
 /* ---------- the whole lesson on one page (to read, print or save as PDF) ---------- */
 function wholeView(run){
   return { kind: "whole", render(d){
+    STOP_LAST = run.n + 1;
     const o = run.outline, fwd = run.dir === "forward";
     setBar(o.name, "whole");
     const box = el("div", { class: "whole" });
@@ -1113,22 +1332,24 @@ function wholeView(run){
       box.append(w);
     });
     box.append(el("p", { class: "hint", text: "From Start to Finish to Start on NuSparkLearnWow.com. Written live with AI; times and counts are typical estimates." }));
+    if (run.a && run.b) box.append(usualEnding(run));
     d.append(box);
   }};
 }
 function lessonParts(run){
   const o = run.outline, fwd = run.dir === "forward", out = [];
-  if (fwd && run.a && run.a.blueprint) { const b = run.a.blueprint; out.push({ h: "The Blueprint", body: [b.text, b.requirements.length ? "It has to: " + b.requirements.join("; ") + "." : "", ...b.math.map(m => m.label + ": " + m.work + (m.result ? " = " + m.result : ""))].filter(Boolean) }); }
+  if (fwd && run.a && run.a.blueprint) { const b = run.a.blueprint; out.push({ h: run.kind === "plan" ? "The Big Idea" : "The Blueprint", body: [b.text, b.requirements.length ? "It has to: " + b.requirements.join("; ") + "." : "", ...b.math.map(m => m.label + ": " + m.work + (m.result ? " = " + m.result : ""))].filter(Boolean) }); }
   if (!fwd && run.a && run.a.start) out.push({ h: "The Starting Point", body: [run.a.start.text, run.a.start.chainLength ? "The chain stretches " + run.a.start.chainLength + "." : ""].filter(Boolean) });
-  for (let n = 1; n <= 8; n++) {
+  for (let n = 1; n <= run.n; n++) {
     const s = stepData(run, n), t = o.steps[n - 1];
     const body = s ? [s.text,
       fwd ? (s.added && s.added.length ? "Added: " + s.added.join(", ") + "." : "") : (s.whatHappens || ""),
       fwd ? (s.madeBy ? "Who makes it: " + s.madeBy : "") : (s.whereFrom ? "Where it gets its supply: " + s.whereFrom : ""),
       fwd ? (s.materials ? "What it's made of: " + s.materials : "") : (s.whoRunsIt ? "Who runs it: " + s.whoRunsIt : ""),
       s.math ? s.math.label + ": " + s.math.work + (s.math.result ? " = " + s.math.result : "") : "",
-      s.wow ? "Wow...Who Knew? " + s.wow : ""].filter(Boolean) : [t.adds || "(still loading)"];
-    out.push({ h: (fwd ? "Step " : "Hop ") + n + ": " + t.title, body });
+      s.wow ? "Wow...Who Knew? " + s.wow : "",
+      run.more[n] && run.more[n].text ? "More detail: " + run.more[n].text.replace(/\n+/g, " ") : ""].filter(Boolean) : [t.adds || "(still loading)"];
+    out.push({ h: unit(run) + n + ": " + t.title, body });
   }
   const f = run.b && run.b.finish;
   if (f) {
@@ -1151,6 +1372,8 @@ function lessonText(run){
 /* ---------- wire it up ---------- */
 document.querySelectorAll("#dirSeg button").forEach(b => b.addEventListener("click", () => setSeg("dirSeg", b.dataset.v)));
 document.querySelectorAll("#levelSeg button").forEach(b => b.addEventListener("click", () => setSeg("levelSeg", b.dataset.v)));
+document.querySelectorAll("#stepsSeg button").forEach(b => b.addEventListener("click", () => setSeg("stepsSeg", b.dataset.v)));
+document.querySelectorAll("#kindSeg button").forEach(b => b.addEventListener("click", () => setSeg("kindSeg", b.dataset.v)));
 document.querySelectorAll("#sideTabs button").forEach(b => b.addEventListener("click", () => {
   state.side = b.dataset.v; state.door = null;
   document.querySelectorAll("#sideTabs button").forEach(x => x.classList.toggle("on", x === b));
