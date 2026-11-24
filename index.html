@@ -173,7 +173,8 @@ main{max-width:1100px;margin:0 auto;padding:18px 14px 0}
 
 /* the two sides and the 8 category doors */
 .sides{margin-top:18px}
-.sidetabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sidetabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:700px){.sidetabs{gap:5px}.sidetabs button{font-size:15px;padding:10px 6px}.sidetabs button small{display:none}}
 .sidetabs button{border:0;border-radius:14px 14px 0 0;padding:12px 10px;font-family:Oswald,Impact,sans-serif;font-size:19px;letter-spacing:.4px;text-transform:uppercase;cursor:pointer;background:var(--steel-lt);color:var(--soft)}
 .sidetabs button.on{background:var(--steel);color:#fff}
 .sidetabs button small{display:block;font-family:Nunito,sans-serif;text-transform:none;letter-spacing:0;font-size:13px;font-weight:700;opacity:.85}
@@ -421,8 +422,8 @@ footer p{margin:6px 0}
   <section class="pick" aria-label="Pick something to build">
     <div class="tog kindtog"><b>Pick your starting point</b>
       <div class="seg big2" id="kindSeg">
-        <button type="button" data-v="build" class="on">🔨 Build<small>The actual build, from prep to finished</small></button>
-        <button type="button" data-v="plan">📋 The Build Plan<small>Strategy, sourcing, testing, pricing, logistics</small></button>
+        <button type="button" data-v="build" class="on">🔨 Build It<small>The actual build, from prep to finished</small></button>
+        <button type="button" data-v="plan">📋 Plan It<small>Strategy, sourcing, testing, pricing, logistics</small></button>
       </div>
     </div>
     <label class="big" for="mainQ" id="mainLabel">What do you want to see built?</label>
@@ -455,6 +456,7 @@ footer p{margin:6px 0}
       <div class="sidetabs" id="sideTabs">
         <button type="button" data-v="home" class="on">🏠 Home Life<small>Utilities, appliances, gadgets, the world outside</small></button>
         <button type="button" data-v="industry">🏭 Industry &amp; Manufacturing<small>Parts, materials, machines, big systems</small></button>
+        <button type="button" data-v="tech">💻 Technology &amp; Internet<small>The web, apps, AI, computers and chips</small></button>
       </div>
       <div class="doorsbox">
         <div class="doors" id="doors"></div>
@@ -510,13 +512,27 @@ const SIDES = {
     { id: "sys", icon: "🌐", name: "Big Systems", blurb: "Giant machines made of machines", items: [
       ["🏭", "Car assembly line"], ["📦", "Distribution warehouse"], ["🗄️", "Data center"], ["⚡", "Power plant"],
       ["💧", "Water treatment plant"], ["🚢", "Cargo port"], ["🛰️", "GPS satellites"], ["🧳", "Airport baggage system"]] }
+  ],
+  tech: [
+    { id: "net", icon: "🌐", name: "The Internet", blurb: "How the web reaches you", items: [
+      ["🕸️", "A website"], ["🔍", "Search engine"], ["📧", "Email"], ["📶", "Wi-Fi router"],
+      ["🌊", "Undersea internet cable"], ["📡", "5G cell network"], ["☁️", "Cloud storage"], ["🎬", "Video streaming service"]] },
+    { id: "apps", icon: "📱", name: "Apps & Software", blurb: "The code behind the screen", items: [
+      ["📱", "Smartphone app"], ["🎮", "Video game"], ["💬", "Social media platform"], ["🛍️", "Online store"],
+      ["🪟", "Computer operating system"], ["💳", "Mobile payment app"], ["🗺️", "Navigation app"], ["🔐", "Password and login system"]] },
+    { id: "ai", icon: "🤖", name: "AI & Robots", blurb: "Machines that think and move", items: [
+      ["💭", "AI chatbot"], ["🚘", "Self-driving car"], ["🧹", "Robot vacuum"], ["🗣️", "Voice assistant"],
+      ["🛸", "Delivery drone"], ["📦", "Warehouse robot"], ["🏠", "Smart home system"], ["🎨", "AI image generator"]] },
+    { id: "chips", icon: "🖥️", name: "Computers & Chips", blurb: "The hardware doing the work", items: [
+      ["🏭", "Chip factory (fab)"], ["🖥️", "Gaming PC"], ["🗄️", "Server"], ["💾", "Solid-state drive"],
+      ["🎴", "Graphics card (GPU)"], ["🧮", "Supercomputer"], ["⚛️", "Quantum computer"], ["⌚", "Smartwatch"]] }
   ]
 };
 
 const moreIdeas = {}; // "door|kind" -> extra ideas Mr. Paul suggested this visit
 
 // Banner: 8 real photos (4 on phones), picked at random each visit, with drawn tiles if a photo won't load
-const BANNER = ["Traffic light", "Assembly line", "Container ship", "Integrated circuit", "Electrical substation", "Industrial robot",
+const BANNER = ["Data center", "Submarine communications cable", "Smartphone", "Traffic light", "Assembly line", "Container ship", "Integrated circuit", "Electrical substation", "Industrial robot",
   "Tower crane", "Printed circuit board", "Wind turbine", "Forklift", "Steelmaking", "Warehouse", "Transformer", "Dishwasher", "Shopping cart", "Cell site"];
 const FALLBACK_TILES = [["🚦", "Out in the world"], ["🏭", "Factories"], ["🔩", "Parts"], ["🚢", "Supply chain"], ["⚡", "Power"], ["📐", "Planning"], ["🦾", "Machines"], ["📦", "Delivery"]];
 const BAR_RIGHT = { home: "Ready", outline: "Planning", clarify: "Quick Question", plan: "The Blueprint", step: "Building", trace: "Tracing Back", done: "Finished", whole: "Whole Lesson" };
@@ -790,7 +806,8 @@ function homeView(){
       el("div", { class: "diff" },
         el("div", {}, el("b", { text: "📐 It starts with a plan. " }), "Who designs it, the rules it must meet, and the math: length times width, loads, power."),
         el("div", {}, el("b", { text: "🏭 Nothing builds itself. " }), "Every step shows which specialty factory makes each part, and what it's made of."),
-        el("div", {}, el("b", { text: "📋 The Build Plan. " }), "Everything but the build: strategy, sourcing, testing, optimizing, pricing and logistics."),
+        el("div", {}, el("b", { text: "📋 Plan It. " }), "Everything but the build: strategy, sourcing, testing, optimizing, pricing and logistics."),
+        el("div", {}, el("b", { text: "🌐 Three worlds. " }), "Home Life, Industry & Manufacturing, and Technology & Internet: 12 doors, 8 picks behind each, and 8 more ideas whenever you want them."),
         el("div", {}, el("b", { text: "🧒 Two levels. " }), "The same journey in grown-up detail or kid-friendly words. Ask Mr. Paul anything along the way.")),
       el("div", { class: "tryrow" }, el("b", { text: "Try one:" }),
         ...shuffle(["Traffic light", "Shopping cart", "Electrical outlet", "GPS satellites", "Microchip", "Dishwasher", "Skyscraper", "Cardboard box"]).slice(0, 4)
@@ -869,7 +886,7 @@ function lessonView(run){
 
     d.append(el("div", { class: "lhead" },
       el("span", { class: "em", "aria-hidden": "true", text: o.emoji }),
-      el("div", {}, el("span", { class: "dirtag" + (fwd ? "" : " back"), text: (proc ? "📋 Build Plan · " : "🔨 Build · ") + (fwd ? "▶ Start to Finish" : "◀ Finish to Start") + " · " + run.n + " steps" }),
+      el("div", {}, el("span", { class: "dirtag" + (fwd ? "" : " back"), text: (proc ? "📋 Plan It · " : "🔨 Build It · ") + (fwd ? "▶ Start to Finish" : "◀ Finish to Start") + " · " + run.n + " steps" }),
         el("h2", { text: o.name }), o.oneLiner ? el("p", { text: o.oneLiner }) : null)));
 
     // stage track
