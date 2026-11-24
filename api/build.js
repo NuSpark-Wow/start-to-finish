@@ -34,7 +34,7 @@ WHAT THE TOOL DOES: a visitor picks any thing, product or system (a traffic ligh
 - START TO FINISH (forward): it begins with the PLANNING (who designs it, the requirements, the real math: length times width, loads, how many tiles or bolts, power budgets), then the build, step by step, in the true order a factory or crew does it, until it is finished. Every step says what gets ADDED, which specialty supplier or factory makes those parts, what they are made of and where those materials come from. Nothing builds itself: show how many different companies and factories one everyday object depends on.
 - FINISH TO START (backward): it begins with the finished thing in use, right in front of you, and traces back one hop at a time to where everything comes from: for an outlet, the outlet, then the wire in the wall, the breaker panel, the meter, the line to the street, the transformer, the substation, the transmission lines, the power plant, the fuel. For a product, the store shelf, the distribution center, the port, the assembly plant, the part suppliers, the material processors, the mines, farms or wells. This is the supply chain and logistics lesson.
 
-FOCUS: how things are engineered, manufactured, supplied and delivered TODAY: home life (utilities, appliances, gadgets, the house itself, the things out in the world like traffic lights and cell towers) and industry and manufacturing (parts and components, materials, machines, vehicles, big systems like warehouses, data centers and power plants). No history lessons and no inventor stories; one short line of context at most.
+FOCUS: how things are engineered, manufactured, supplied and delivered TODAY: home life (utilities, appliances, gadgets, the house itself, the things out in the world like traffic lights and cell towers), industry and manufacturing (parts and components, materials, machines, vehicles, big systems like warehouses and power plants), and technology and the internet (websites, apps and software, networks and cables, cloud and data centers, AI and robots, computers and chips). For software and internet things, the build is how it is designed, coded, tested and run on real servers and networks. No history lessons and no inventor stories; one short line of context at most.
 
 THE DELIVERY TRIP: the trip from factory to store is usually the same truck, ship and warehouse story, so keep it short in the forward direction, and only go deep when the journey is genuinely special (fresh flowers flown overnight, a jet engine with its own escort, a satellite launched on a rocket). In the backward direction the supply chain IS the lesson, so give each hop real detail.
 
@@ -54,7 +54,7 @@ const LEVELS = {
 };
 const KINDS = {
   build: `KIND: BUILD. This lesson is the actual physical build, from prep to finished: the parts, the materials, the machines, the factories and crews, and the order it really goes together in.`,
-  plan: `KIND: THE BUILD PLAN. This lesson is everything EXCEPT the physical build: the business side of bringing this thing to life. Cover the real stages a company goes through: spotting the need and the market, strategy and business decisions (what to make, for whom, which features, make or buy, cost targets), sourcing (finding and choosing suppliers for parts and materials, contracts, backups), planning the build (where it is made, the factory or crew, schedule and capacity, the math), prototyping and testing (safety tests, certifications, quality checks), optimizing (cutting cost, waste and time, improving quality), pricing (the cost breakdown, margins, what the market will pay), and logistics (packaging, shipping, warehouses, inventory, getting it to stores or customers). Do NOT describe the physical assembly itself; the Build lesson covers that. Business numbers (costs, margins, prices, volumes) are realistic EXAMPLES: always say "for example" or "a typical" and never present them as one real company's figures.`
+  plan: `KIND: PLAN IT (the build plan). This lesson is everything EXCEPT the physical build: the business side of bringing this thing to life. Cover the real stages a company goes through: spotting the need and the market, strategy and business decisions (what to make, for whom, which features, make or buy, cost targets), sourcing (finding and choosing suppliers for parts and materials, contracts, backups), planning the build (where it is made, the factory or crew, schedule and capacity, the math), prototyping and testing (safety tests, certifications, quality checks), optimizing (cutting cost, waste and time, improving quality), pricing (the cost breakdown, margins, what the market will pay), and logistics (packaging, shipping, warehouses, inventory, getting it to stores or customers). Do NOT describe the physical assembly itself; the Build lesson covers that. Business numbers (costs, margins, prices, volumes) are realistic EXAMPLES: always say "for example" or "a typical" and never present them as one real company's figures.`
 };
 function dirText(dir, kind, n) {
   if (dir === "backward") return kind === "plan"
@@ -223,7 +223,7 @@ TASK: blend the two into ONE final, improved lesson. The other AI's response is 
 
   if (mode === "ideas") {
     const ex = (Array.isArray(b.exclude) ? b.exclude : []).slice(0, 60).map(t => clip(t, 60)).filter(Boolean).join("; ");
-    return `Workshop door (category): "${clip(b.category, 60)}" on the ${b.side === "industry" ? "Industry & Manufacturing" : "Home Life"} side.
+    return `Workshop door (category): "${clip(b.category, 60)}" on the ${b.side === "industry" ? "Industry & Manufacturing" : b.side === "tech" ? "Technology & Internet" : "Home Life"} side.
 ${KINDS[b.kind === "plan" ? "plan" : "build"]}
 
 TASK: suggest 8 MORE things that get built or made that fit this category, are everyday or fascinating, and make people curious. National, not local. Do not repeat or reword any of these: ${ex || "(none)"}.
@@ -290,7 +290,7 @@ module.exports = async (req, res) => {
     }
 
     if (mode === "detail") {
-      const data = await anthropic(p, MODEL, b.level === "kid" ? 4500 : 8000, true);
+      const data = await anthropic(p, MODEL, b.level === "kid" ? 10000 : 16000, true);
       const j = answerOf(data) || {};
       const steps = (Array.isArray(j.steps) ? j.steps : []).slice(0, stepsOf(b) / 2).map(s => cleanStep(s, b.dir)).filter(s => s.text);
       if (!steps.length) return res.status(200).json(Object.assign({ ok: false, message: "That part of the lesson didn't come through. Tap Try Again." }, b.debug ? { debug: why(data) } : {}));
@@ -312,14 +312,14 @@ module.exports = async (req, res) => {
     }
 
     if (mode === "art") {
-      const data = await anthropic(p, MODEL, 9000, false);
+      const data = await anthropic(p, MODEL, 16000, false);
       const layers = parseLayers(textOf(data), stepsOf(b));
       if (layers.filter(Boolean).length < stepsOf(b) / 2) return res.status(200).json(Object.assign({ ok: false }, b.debug ? { debug: why(data) } : {}));
       return res.status(200).json({ ok: true, layers });
     }
 
     if (mode === "more") {
-      const j = answerOf(await anthropic(p, MODEL, 3000, true)) || {};
+      const j = answerOf(await anthropic(p, MODEL, 8000, true)) || {};
       const text = clip(j.text, 4000);
       if (!text) return res.status(200).json({ ok: false, message: "More detail didn't come through. Tap Try Again." });
       return res.status(200).json({ ok: true, text, extra: clipList(j.extra, 3, 300) });
@@ -327,20 +327,20 @@ module.exports = async (req, res) => {
 
     if (mode === "blend") {
       if (String(b.review || "").trim().length < 40) return res.status(400).json({ error: "Please paste the other AI's response first." });
-      const j = answerOf(await anthropic(p, MODEL, 12000, true)) || {};
+      const j = answerOf(await anthropic(p, MODEL, 20000, true)) || {};
       const sections = (Array.isArray(j.sections) ? j.sections : []).slice(0, 20).map(x => ({ heading: clip(x && x.heading, 90), text: clip(x && x.text, 3000) })).filter(x => x.text);
       if (!sections.length) return res.status(200).json({ ok: false, message: "Mr. Paul couldn't blend those just now. Tap Try Again." });
       return res.status(200).json({ ok: true, title: clip(j.title, 120), summary: clip(j.summary, 800), sections, updates: clipList(j.updates, 12, 300) });
     }
 
     if (mode === "ask") {
-      const j = answerOf(await anthropic(p, MODEL, 1600, true)) || {};
+      const j = answerOf(await anthropic(p, MODEL, 5000, true)) || {};
       const c = j.clarify && typeof j.clarify === "object" ? { q: clip(j.clarify.q, 160), options: clipList(j.clarify.options, 4, 60) } : null;
       return res.status(200).json({ ok: true, answer: clip(j.answer, 2400) || "Hmm, let me think about that one. Try asking it a different way.", clarify: c && c.q && c.options.length >= 2 ? c : null });
     }
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ error: "The workshop hit a snag. Please try again." });
+    return res.status(500).json(Object.assign({ error: "The workshop hit a snag. Please try again." }, b.debug ? { detail: String(e.message || e).slice(0, 400) } : {}));
   }
 };
 
@@ -404,9 +404,11 @@ const clipList = (a, n, len) => (Array.isArray(a) ? a : []).slice(0, n).map(x =>
 const ANSWER_TOOL = { name: "give_answer", description: "Deliver the answer in the exact JSON shape the user message describes.", input_schema: { type: "object", additionalProperties: true, properties: {} } };
 async function anthropic(userPrompt, model, maxTokens, useTool) {
   const body = { model: model || MODEL, max_tokens: maxTokens || 6000, system: SYSTEM, messages: [{ role: "user", content: userPrompt }] };
-  // thinking stays off: it is slower, eats the token budget, and cannot be used with a required tool call
-  body.thinking = { type: "disabled" };
-  if (useTool) { body.tools = [ANSWER_TOOL]; body.tool_choice = { type: "tool", name: "give_answer" }; }
+  // The fast model gets thinking turned off and a required tool call. The stronger model refuses the
+  // "disabled" setting, so it keeps its default and is asked (not forced) to use the tool.
+  const fast = /haiku/i.test(body.model);
+  if (fast) body.thinking = { type: "disabled" };
+  if (useTool) { body.tools = [ANSWER_TOOL]; body.tool_choice = fast ? { type: "tool", name: "give_answer" } : { type: "auto" }; }
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
