@@ -14,6 +14,7 @@
 
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 const FAST_MODEL = process.env.FAST_MODEL || "claude-haiku-5-5";
+const ART_MODEL = process.env.ART_MODEL || FAST_MODEL;   // the blueprint drawing: the fast model finishes in time
 const DAILY_LIMIT = parseInt(process.env.DAILY_LIVE_LIMIT || "40", 10);
 const ALLOWED = (process.env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
 const stepsOf = b => (parseInt(b && b.steps, 10) === 12 ? 12 : 8);
@@ -50,7 +51,7 @@ OUTPUT: when the user message asks for a JSON shape, deliver it by calling the g
 
 const LEVELS = {
   adult: `LEVEL: GROWN-UP. Detailed and specific, for a curious adult: real part names, real materials, real numbers and units, how the parts and suppliers connect. Still friendly and clear, never academic.`,
-  kid: `LEVEL: KID (about ages 8 to 12). Simple words, short sentences, fun comparisons ("as long as a school bus", "thinner than a hair"). Still true and still step by step, just simpler. Explain any real part name in kid words. No scary details.`
+  kid: `LEVEL: KID (the visitor is a kid, about ages 8 to 12). Always simple words and short sentences, whatever the topic. EVERY example, comparison, math box and fun fact comes from a kid's world: school, recess, sports, toys, video games, snacks, pets, a lemonade stand, a school bus, a bathtub, a backpack (for example "enough concrete to fill 3 bathtubs", "as long as a school bus", "thinner than a hair"). Math stays tiny and fun (adding, multiplying small numbers). For the business side, compare with a lemonade stand or a bake sale. Still true and still step by step. Explain any real part name in kid words. No scary details.`
 };
 const KINDS = {
   build: `KIND: BUILD. This lesson is the actual physical build, from prep to finished: the parts, the materials, the machines, the factories and crews, and the order it really goes together in.`,
@@ -103,7 +104,7 @@ ${x.dir === "forward" ? (x.kind === "plan" ? "The big idea (why make it at all) 
   }
 
   if (mode === "detail") {
-    const part = b.part === "b" ? "b" : "a";
+    const part = b.part === "b" ? "b" : b.part === "p" ? "p" : "a";
     const half = x.n / 2;
     const range = part === "a" ? [1, half] : [half + 1, x.n];
     const words = x.level === "kid" ? (x.n === 12 ? "50 to 75" : "60 to 90") : (x.n === 12 ? "100 to 140" : "130 to 180");
@@ -116,7 +117,7 @@ ${x.dir === "forward" ? (x.kind === "plan" ? "The big idea (why make it at all) 
       : `{"n": number, "title": "same title as the outline", "text": "${words} words: what this hop is, how it works, what it does to get the thing to the next hop, and who runs it", "whatHappens": "the one-sentence job of this hop", "whereFrom": "where this hop gets its supply from (the next hop back), one sentence", "whoRunsIt": "the kind of company, crew or utility that runs this hop, one sentence", "distance": "about how far this hop is from the previous one, short, or empty if it does not apply", "inside": "what you would see inside this place or part, one sentence", "math": null or {"label": "short name", "work": "a real calculation with numbers and units", "result": "the answer, short"}, "wow": "one surprising true fact about this hop", "imageQuery": "2 to 4 literal search words for a real photo of this hop (for example: electrical substation transformer)"}`;
 
     let extra = "";
-    if (part === "a" && x.dir === "forward") extra = `,
+    if (part === "p" && x.dir === "forward") extra = `,
   "blueprint": {
     "text": "${x.level === "kid" ? "60 to 90" : "120 to 170"} words: ${x.kind === "plan" ? "the big idea: the need or problem it solves, who buys it, why a company decides it is worth making, the risks, and the first business math that says yes" : "who plans and designs it before anything is built (engineers, architects, designers), what it has to do, the rules and standards it must meet, and how the plan becomes drawings and a parts list"}",
     "planners": ["2 to 4 roles that plan it, short"],
@@ -126,7 +127,7 @@ ${x.dir === "forward" ? (x.kind === "plan" ? "The big idea (why make it at all) 
     "suppliers": "about how many different suppliers or factories are involved, short",
     "imageQuery": "2 to 4 search words for a real photo of its design or blueprint stage"
   }`;
-    if (part === "a" && x.dir === "backward") extra = `,
+    if (part === "p" && x.dir === "backward") extra = `,
   "start": {
     "text": "${x.level === "kid" ? "50 to 80" : "90 to 130"} words: ${x.kind === "plan" ? "the product on the shelf with its price tag, and the big idea: every part of that price and every feature is the result of a business decision, and we are about to trace them back to the first idea" : "the finished thing in front of you, working, and the big idea: it took a long chain of places, people and materials to get here, and we are about to follow it back"}",
     "chainLength": "${x.kind === "plan" ? "about how long from first idea to the shelf, short (for example: about 2 years)" : "about how far the whole chain stretches, short (for example: about 8,000 miles)"}"
@@ -148,6 +149,14 @@ ${x.dir === "forward" ? (x.kind === "plan" ? "The big idea (why make it at all) 
     "deeper": ["exactly 3 curious follow-up questions a visitor might ask next"]
   }`;
 
+    if (part === "p") return x.text + `
+
+THE ${x.n} STEPS (already shown to the visitor):
+${outlineList(b)}
+
+TASK: write ONLY the opening of the lesson (${x.dir === "forward" ? "the part shown before step 1" : "the starting point"}), not the steps. Call the give_answer tool with this shape:
+{${extra.replace(/^,\s*/, "")}
+}`;
     return x.text + `
 
 THE ${x.n} STEPS (already shown to the visitor; keep these titles and this order):
@@ -226,7 +235,7 @@ TASK: blend the two into ONE final, improved lesson. The other AI's response is 
     return `Workshop door (category): "${clip(b.category, 60)}" on the ${b.side === "industry" ? "Industry & Manufacturing" : b.side === "tech" ? "Technology & Internet" : "Home Life"} side.
 ${KINDS[b.kind === "plan" ? "plan" : "build"]}
 
-TASK: suggest 8 MORE things that get built or made that fit this category, are everyday or fascinating, and make people curious. National, not local. Do not repeat or reword any of these: ${ex || "(none)"}.
+TASK: suggest 8 MORE things that get built or made that fit this category${b.level === "kid" ? ", picked for a KID (about 8 to 12): mostly things kids love (toys, games, sports, snacks, school, rides), plus one or two everyday things everyone uses" : ", are everyday or fascinating, and make people curious"}. National, not local. Do not repeat or reword any of these: ${ex || "(none)"}.
 Call the give_answer tool with this shape: {"ideas": [ exactly 8 items: {"icon": "one emoji", "name": "short name, 1 to 4 words"} ]}`;
   }
 
@@ -290,10 +299,11 @@ module.exports = async (req, res) => {
     }
 
     if (mode === "detail") {
-      const data = await anthropic(p, MODEL, b.level === "kid" ? 10000 : 16000, true);
+      const data = await anthropic(p, MODEL, b.part === "p" ? 8000 : (b.level === "kid" ? 10000 : 16000), true);
       const j = answerOf(data) || {};
       const steps = (Array.isArray(j.steps) ? j.steps : []).slice(0, stepsOf(b) / 2).map(s => cleanStep(s, b.dir)).filter(s => s.text);
-      if (!steps.length) return res.status(200).json(Object.assign({ ok: false, message: "That part of the lesson didn't come through. Tap Try Again." }, b.debug ? { debug: why(data) } : {}));
+      if (!steps.length && b.part !== "p") return res.status(200).json(Object.assign({ ok: false, message: "That part of the lesson didn't come through. Tap Try Again." }, b.debug ? { debug: why(data) } : {}));
+      if (b.part === "p" && !j.blueprint && !j.start) return res.status(200).json(Object.assign({ ok: false, message: "The opening didn't come through. Tap Try Again." }, b.debug ? { debug: why(data) } : {}));
       const out = { ok: true, steps };
       if (j.blueprint) out.blueprint = {
         text: clip(j.blueprint.text, 1600), planners: clipList(j.blueprint.planners, 4, 60), requirements: clipList(j.blueprint.requirements, 4, 160),
@@ -312,7 +322,7 @@ module.exports = async (req, res) => {
     }
 
     if (mode === "art") {
-      const data = await anthropic(p, MODEL, 16000, false);
+      const data = await anthropic(p, ART_MODEL, 9000, false);
       const layers = parseLayers(textOf(data), stepsOf(b));
       if (layers.filter(Boolean).length < stepsOf(b) / 2) return res.status(200).json(Object.assign({ ok: false }, b.debug ? { debug: why(data) } : {}));
       return res.status(200).json({ ok: true, layers });
