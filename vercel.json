@@ -1,6 +1,21 @@
 {
   "functions": {
-    "api/build.js": { "maxDuration": 240 },
-    "api/images.js": { "maxDuration": 30 }
-  }
+    "api/build.js": {
+      "maxDuration": 240
+    },
+    "api/images.js": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'self' https://nusparkpublishing.com https://*.nusparkpublishing.com https://nusparkmarketing.com https://*.nusparkmarketing.com https://nusparklearnwow.com https://*.nusparklearnwow.com"
+        }
+      ]
+    }
+  ]
 }
