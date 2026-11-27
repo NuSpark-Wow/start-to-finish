@@ -331,6 +331,16 @@ body:not(.working):not(.playing) .ctrl button.stop{opacity:.4;pointer-events:non
 .nav .count{font-weight:900;color:var(--soft);font-size:14px}
 .toggle{border:2px solid #cfd6dd;background:#fff;border-radius:30px;padding:8px 14px;font-weight:800;font-size:14.5px;cursor:pointer;color:var(--ink)}
 .toggle.on{background:var(--bp);border-color:var(--bp);color:#fff}
+.speakers{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;margin-top:12px;background:var(--steel-lt);border-radius:16px;padding:10px 12px}
+.speakers .sl{font-weight:900;font-size:14.5px;color:var(--ink)}
+.speakers .sbtns{display:flex;gap:6px;flex-wrap:wrap}
+.speakers .sbtns button{border:2px solid #cfd6dd;background:#fff;border-radius:30px;padding:7px 13px;font-weight:800;font-size:14px;cursor:pointer;color:var(--ink)}
+.speakers .sbtns button.on{background:var(--bp);border-color:var(--bp);color:#fff}
+.speakers .sbtns button.on.mute{background:var(--orange);border-color:var(--orange)}
+.speakers .srate{display:flex;align-items:center;gap:6px;flex:1 1 210px;min-width:0}
+.speakers .srate input{flex:1;min-width:80px;accent-color:var(--orange)}
+.speakers .rv{border:0;background:#fff;border-radius:30px;padding:5px 10px;font-weight:800;font-size:13px;cursor:pointer;color:var(--soft);min-width:64px}
+@media(max-width:520px){.speakers{gap:8px}.speakers .sbtns button{padding:6px 11px;font-size:13.5px}}
 
 /* clarify */
 .clar h3{font-family:Oswald,Impact,sans-serif;text-transform:uppercase;color:var(--steel);margin:0 0 8px;font-size:24px}
@@ -699,32 +709,146 @@ function buildBanner(){
   }).catch(() => lay([]));
 }
 
-/* ---------- read aloud (the browser's own voice) ---------- */
-const tts = { on: false, voice: null };
+/* ---------- read aloud: the usual speakers (Man, Woman, Mute + speed) ----------
+   Mr. Paul's recorded voice comes from /api/speak (ElevenLabs). Kids get the kid-friendly voices.
+   If the recorded voice is off or fails, the device's own voice takes over, so there is always sound.
+   Each step is read in pieces: the first sentence starts right away while the rest is still being made,
+   and the next step's opening is fetched ahead of time. Nothing is saved between visits. */
+const tts = { on: true, voice: "man", last: "man", rate: 1, speakingId: 0, cache: new Map(), cloudOff: false, unlocked: false, bvoice: null, readKey: "" };
+const player = new Audio();
+player.preload = "auto";
+try { player.preservesPitch = true; player.mozPreservesPitch = true; player.webkitPreservesPitch = true; } catch(e){}
+// Phones only allow sound after a tap. The first tap anywhere quietly "opens" the speaker for the whole visit.
+function silentWav(){
+  const n = 800, b = new ArrayBuffer(44 + n), v = new DataView(b), w = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + n, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, "data"); v.setUint32(40, n, true);
+  for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+  return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
+}
+function unlockAudio(){
+  if (tts.unlocked) return;
+  tts.unlocked = true;
+  try { if (!player.src || player.paused) { player.src = silentWav(); const pr = player.play(); if (pr) pr.catch(() => { tts.unlocked = false; }); } } catch(e) { tts.unlocked = false; }
+  try { if ("speechSynthesis" in window) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } } catch(e){}
+}
+["pointerdown", "touchend", "click", "keydown"].forEach(ev => document.addEventListener(ev, unlockAudio, true));
+
+// Split a step into pieces: a short first piece (starts fast), then pieces of a few sentences each.
+function voiceChunks(text){
+  const parts = (String(text || "").match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || []).map(x => x.trim()).filter(Boolean);
+  const out = []; let cur = "";
+  parts.forEach(pt => {
+    const limit = out.length === 0 ? 90 : 420;
+    if (cur && (cur + " " + pt).length > limit) { out.push(cur); cur = pt; } else cur = cur ? cur + " " + pt : pt;
+  });
+  if (cur) out.push(cur);
+  return out;
+}
+function b64url(b64){ const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return URL.createObjectURL(new Blob([u], { type: "audio/mpeg" })); }
+function voiceFor(){ return (tts.voice === "woman" ? "woman" : "man"); }
+function fetchVoice(text){
+  if (tts.cloudOff) return Promise.resolve(null);
+  const lvl = state.level === "kid" ? "kid" : "adult", key = voiceFor() + "|" + lvl + "|" + text;
+  if (tts.cache.has(key)) return tts.cache.get(key);
+  const p = fetch("/api/speak", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text, voice: voiceFor(), level: lvl }) })
+    .then(r => { if (r.status === 501) { tts.cloudOff = true; return null; } return r.ok ? r.json() : null; })
+    .then(j => j && j.audio ? b64url(j.audio) : null)
+    .catch(() => null);
+  tts.cache.set(key, p);
+  p.then(u => { if (!u) tts.cache.delete(key); });
+  if (tts.cache.size > 80) tts.cache.delete(tts.cache.keys().next().value);
+  return p;
+}
 function pickVoice(){
   if (!("speechSynthesis" in window)) return null;
-  const vs = speechSynthesis.getVoices().filter(v => /^en(-|_)US/i.test(v.lang));
-  return vs.find(v => /natural|google us|samantha|aria|guy|jenny/i.test(v.name)) || vs[0] || null;
+  const vs = speechSynthesis.getVoices().filter(v => /^en(-|_)(US|GB)/i.test(v.lang));
+  const female = /female|woman|samantha|aria|jenny|zira|susan|karen|moira|tessa|victoria|allison|ava|serena|libby|sonia|emma|google us english$/i;
+  const male = /male|man\b|guy|david|mark|daniel|alex|fred|tom|aaron|arthur|ryan|george|davis|christopher|eric|google uk english male/i;
+  const want = tts.voice === "woman" ? (v => female.test(v.name) && !/\bmale\b/i.test(v.name)) : (v => male.test(v.name) && !/female/i.test(v.name));
+  return vs.find(v => want(v) && /natural|neural|online|google/i.test(v.name)) || vs.find(want) || vs.find(v => /natural|google us/i.test(v.name)) || vs[0] || null;
 }
-function speak(text, done){
+function browserSpeak(chunks, myId, done){
   if (!("speechSynthesis" in window)) { done && done(); return; }
-  speechSynthesis.cancel();
-  const parts = String(text || "").match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || [];
+  try { speechSynthesis.cancel(); } catch(e){}
+  const parts = chunks.join(" ").match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || [];
   let i = 0;
   const next = () => {
-    if (i >= parts.length) { done && done(); return; }
+    if (tts.speakingId !== myId) return;
+    if (i >= parts.length) { tts.speakingId = 0; done && done(); return; }
     const u = new SpeechSynthesisUtterance(parts[i++].trim());
-    tts.voice = tts.voice || pickVoice(); if (tts.voice) u.voice = tts.voice;
-    u.rate = state.level === "kid" ? 0.98 : 1.03;
-    u.onend = () => { if (tts.speakingId === myId) next(); };
-    u.onerror = () => { if (tts.speakingId === myId) next(); };
+    tts.bvoice = pickVoice(); if (tts.bvoice) u.voice = tts.bvoice;
+    u.rate = (state.level === "kid" ? 0.98 : 1.03) * tts.rate;
+    u.onend = next; u.onerror = next;
     speechSynthesis.speak(u);
+    if (state.paused) try { speechSynthesis.pause(); } catch(e){}
   };
-  const myId = tts.speakingId = Math.random();
   next();
 }
-function hush(){ tts.speakingId = 0; try { speechSynthesis.cancel(); } catch(e){} }
-if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = () => { tts.voice = pickVoice(); };
+function speak(text, done){
+  hush();
+  if (!tts.on || !text) { done && done(); return; }
+  const myId = tts.speakingId = Math.random();
+  const chunks = voiceChunks(text);
+  if (!chunks.length) { tts.speakingId = 0; done && done(); return; }
+  if (tts.cloudOff) return browserSpeak(chunks, myId, done);
+  const ps = chunks.map(fetchVoice);   // all pieces are made at the same time; the first one is short, so it's ready first
+  let i = 0;
+  const next = async () => {
+    if (tts.speakingId !== myId) return;
+    if (i >= chunks.length) { tts.speakingId = 0; done && done(); return; }
+    const url = await ps[i];
+    if (tts.speakingId !== myId) return;
+    if (!url) return browserSpeak(chunks.slice(i), myId, done);   // recorded voice unavailable: the device's voice finishes the step
+    i++;
+    player.onended = next;
+    player.onerror = () => { if (tts.speakingId === myId) browserSpeak(chunks.slice(i - 1), myId, done); };
+    player.src = url;
+    player.defaultPlaybackRate = tts.rate; player.playbackRate = tts.rate;
+    if (state.paused) return;   // Resume picks it up
+    const pr = player.play();
+    if (pr) pr.catch(() => { if (tts.speakingId === myId) browserSpeak(chunks.slice(i - 1), myId, done); });
+  };
+  next();
+}
+function hush(){
+  tts.speakingId = 0; clearTimeout(tts.waitT);
+  try { player.onended = null; player.onerror = null; player.pause(); } catch(e){}
+  try { speechSynthesis.cancel(); } catch(e){}
+}
+function pauseVoice(){ try { player.pause(); } catch(e){} try { speechSynthesis.pause(); } catch(e){} }
+function resumeVoice(){
+  if (!tts.speakingId) return;
+  try { if (player.src && player.paused && !player.ended) { const pr = player.play(); if (pr) pr.catch(() => {}); } } catch(e){}
+  try { speechSynthesis.resume(); } catch(e){}
+}
+const voiceBusy = () => !!tts.speakingId;
+if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = () => { tts.bvoice = pickVoice(); };
+
+// The speaker row under each step: Man, Woman, Mute, and the speed slider.
+function rateLabel(r){ return r <= 0.87 ? "Slower" : r >= 1.13 ? "Faster" : "Normal"; }
+function speakerRow(run){
+  const pick = v => () => {
+    unlockAudio();
+    if (v === "mute") {
+      if (!tts.on) { tts.on = true; tts.voice = tts.last; say("Voice on. I'll read each step to you."); }
+      else { tts.on = false; hush(); say("Voice off. Everything's still on the screen."); }
+    } else { tts.on = true; tts.voice = tts.last = v; }
+    repaint();
+    if (tts.on && state.run === run && state.view && state.view.kind === "lesson") readCurrent(run);
+  };
+  const lab = el("button", { type: "button", class: "rv", title: "Tap to go back to normal speed",
+    onclick: () => { tts.rate = 1; rng.value = "1"; lab.textContent = "Normal"; try { player.playbackRate = 1; } catch(e){} } }, rateLabel(tts.rate));
+  const rng = el("input", { type: "range", min: "0.75", max: "1.3", step: "0.05", value: String(tts.rate), "aria-label": "Voice speed: slide left for slower, right for faster",
+    oninput: e => { tts.rate = parseFloat(e.target.value) || 1; lab.textContent = rateLabel(tts.rate); try { player.defaultPlaybackRate = tts.rate; player.playbackRate = tts.rate; } catch(e2){} } });
+  return el("div", { class: "speakers noprint", role: "group", "aria-label": "Voice" },
+    el("span", { class: "sl", text: "🔊 Voice" }),
+    el("div", { class: "sbtns" },
+      el("button", { type: "button", class: tts.on && tts.voice === "man" ? "on" : "", onclick: pick("man"), "aria-pressed": String(tts.on && tts.voice === "man") }, "👨 Man"),
+      el("button", { type: "button", class: tts.on && tts.voice === "woman" ? "on" : "", onclick: pick("woman"), "aria-pressed": String(tts.on && tts.voice === "woman") }, "👩 Woman"),
+      el("button", { type: "button", class: !tts.on ? "on mute" : "", onclick: pick("mute"), "aria-pressed": String(!tts.on), title: !tts.on ? "Tap again to turn the voice back on" : "No voice: read along on the screen" }, "🔇 Mute")),
+    el("div", { class: "srate" }, el("span", { "aria-hidden": "true", text: "🐢" }), rng, el("span", { "aria-hidden": "true", text: "🐇" }), lab));
+}
 
 /* ---------- Mr. Paul's speech bubble ---------- */
 function say(text){ const b = $(".mpbub"); if (b) b.textContent = text; }
@@ -753,8 +877,8 @@ function stopAll(){
 }
 function togglePause(){
   state.paused = !state.paused;
-  if (state.paused) { clearTimeout(play.timer); try { speechSynthesis.pause(); } catch(e){} say("Paused. Take your time looking at the blueprint. Tap Resume when you're ready."); }
-  else { try { speechSynthesis.resume(); } catch(e){} say("Back to work!"); if (play.on && !(tts.on && speechSynthesis.speaking)) schedulePlay(); }
+  if (state.paused) { clearTimeout(play.timer); pauseVoice(); say("Paused. Take your time looking at the blueprint. Tap Resume when you're ready."); }
+  else { resumeVoice(); say("Back to work!"); if (play.on && !(tts.on && voiceBusy())) schedulePlay(); }
   repaintCtrl();
 }
 function repaintCtrl(){ const old = display.querySelector(".ctrl"); if (old) old.replaceWith(ctrlBar()); }
@@ -878,6 +1002,7 @@ function startRun(thing, category, clarified){
       run.outline = o;
       loadRest(run);
       show(lessonView(run), false);
+      if (tts.on) readCurrent(run);   // Mr. Paul starts reading the prep as soon as it's written
     })
     .catch(e => { if (state.run === run) show(msgView(e.message, e.stopped ? null : () => startRun(thing, category, clarified)), false); });
 }
@@ -958,8 +1083,8 @@ function lessonView(run){
         el("button", { type: "button", class: "btn", disabled: fin ? "" : null, onclick: () => { stopPlay(); goStep(run, at + 1); } }, at === 0 ? (fwd ? (proc ? "Start the Plan ▶" : "Start Building ▶") : "Start Tracing ▶") : at === STOP_LAST - 1 ? (fwd ? (proc ? "Put It on the Shelf ▶" : "Finish It ▶") : (proc ? "Reach the First Idea ▶" : "Reach the Origin ▶")) : "Next ▶")),
       el("span", { class: "count", text: at === 0 ? (fwd ? (proc ? "The big idea" : "The prep") : "The starting point") : fin ? (fwd ? (proc ? "On the shelf!" : "Finished!") : (proc ? "The first idea" : "The origin")) : unit(run) + at + " of " + run.n }),
       el("div", { class: "grp" },
-        el("button", { type: "button", class: "toggle" + (play.on ? " on" : ""), onclick: () => togglePlay(run), title: "Moves to the next step by itself" }, play.on ? "⏹ Auto Play On" : "▶ Auto Play"),
-        "speechSynthesis" in window ? el("button", { type: "button", class: "toggle" + (tts.on ? " on" : ""), onclick: () => toggleRead(run), title: "Mr. Paul reads each step out loud (your device's voice)" }, tts.on ? "🔊 Reading" : "🔈 Read to Me") : null)));
+        el("button", { type: "button", class: "toggle" + (play.on ? " on" : ""), onclick: () => togglePlay(run), title: "Moves to the next step by itself" }, play.on ? "⏹ Auto Play On" : "▶ Auto Play"))));
+    d.append(speakerRow(run));
 
     // ask Mr. Paul
     d.append(askBar(run));
@@ -1330,9 +1455,22 @@ function currentText(run){
   const s = stepData(run, at); if (!s) return "";
   return unit(run) + at + ". " + o.steps[at - 1].title + ". " + s.text + (s.wow ? " Wow, who knew? " + s.wow : "");
 }
+function textAt(run, at){ const keep = run.at; run.at = at; const t = currentText(run); run.at = keep; return t; }
+function prefetchNext(run){
+  if (!tts.on || tts.cloudOff || run.at >= STOP_LAST) return;
+  const t = textAt(run, run.at + 1); if (!t) return;
+  const c = voiceChunks(t); if (c[0]) fetchVoice(c[0]);   // just the opening, so the next step starts talking right away
+}
 function readCurrent(run){
+  clearTimeout(tts.waitT);
+  if (!tts.on) return;
   const t = currentText(run);
-  if (!t) { if (play.on) { clearTimeout(play.timer); play.timer = setTimeout(() => readCurrent(run), 2500); } return; }
+  if (!t) {   // the step is still being written: read it as soon as it arrives
+    const at = run.at;
+    tts.waitT = setTimeout(() => { if (tts.on && state.run === run && run.at === at && state.view && state.view.kind === "lesson") readCurrent(run); }, 1500);
+    return;
+  }
+  setTimeout(() => prefetchNext(run), 2500);
   speak(t, () => { if (play.on && !state.paused && state.run === run) { clearTimeout(play.timer); play.timer = setTimeout(() => { if (play.on && !state.paused && state.run === run && run.at < STOP_LAST) goStep(run, run.at + 1); else if (run.at >= STOP_LAST) stopPlay(); }, 1500); } });
 }
 
