@@ -6,8 +6,8 @@
 // Only the lesson's own words are sent here. No visitor audio ever reaches this server.
 
 const VOICES = {
-  adult: { man: "x8EpqJ1pKzP4vo35tTCm",   // David - Clear, Friendly Explainer
-           woman: "W3Rk2MrllOWWYVX9H2B1" }, // Instructional Marina - Warm & clear
+  adult: { man: "MlIxnl4hUPbFzWffsZ76",   // Louis - Friendly Instructor
+           woman: "c1uwEpPUcC16tq1udqxk" }, // Harper Lawson - Confident, matter-of-fact
   kid:   { man: "nzFihrBIvB34imQBuxub",   // Josh - Teacher for Kids
            woman: "oClOrzqamOXmtcB8iqTj" }  // Emma - Bright Kids Educator
 };
